@@ -16,12 +16,7 @@ public class DataBase {
         return users.get(userId);
     }
 
-    public static boolean existsUserById(final String id) {
-        return users.containsKey(id);
-    }
-
     public static Collection<User> findAll() {
         return users.values();
     }
-
 }
