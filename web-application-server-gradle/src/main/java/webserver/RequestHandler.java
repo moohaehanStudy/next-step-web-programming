@@ -1,13 +1,12 @@
 package webserver;
 
+import http.HttpRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.DataOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.net.Socket;
+import java.nio.file.Files;
 
 public class RequestHandler extends Thread {
     private static final Logger log = LoggerFactory.getLogger(RequestHandler.class);
@@ -23,6 +22,30 @@ public class RequestHandler extends Thread {
                 connection.getPort());
 
         try (InputStream in = connection.getInputStream(); OutputStream out = connection.getOutputStream()) {
+            BufferedReader reader = new BufferedReader(new InputStreamReader(in));
+
+            StringBuilder sb = new StringBuilder();
+            String line;
+
+            HttpRequest request = new HttpRequest(reader);
+
+            String url = request.getUrl();
+
+            log.debug("URL : {}", url);
+
+            //요청 읽기
+            while(!"".equals(line = reader.readLine())) {
+                sb.append(line);
+
+                if(line == null) return;
+            }
+
+            log.info("Request: {}", sb);
+
+            byte[] bytes = Files.readAllBytes(new File("./webapp" + url).toPath());
+
+            log.info("Response : {}", new String(bytes));
+
             // TODO 사용자 요청에 대한 처리는 이 곳에 구현하면 된다.
             DataOutputStream dos = new DataOutputStream(out);
             byte[] body = "Hello World".getBytes();
