@@ -9,9 +9,10 @@ import util.HttpRequestUtils;
 
 import java.io.*;
 import java.net.Socket;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Map;
 
 public class RequestHandler extends Thread {
@@ -31,21 +32,18 @@ public class RequestHandler extends Thread {
             BufferedReader reader = new BufferedReader(new InputStreamReader(in));
             HttpRequest request = new HttpRequest(reader);
             DataOutputStream dos = new DataOutputStream(out);
-            Map<String, String> queryStringToken = new HashMap<>();
-            Map<String, String> bodyToken = new HashMap<>();
-            Map<String, String> headerToken = new HashMap<>();
 
             String url = request.getUrl();
 
             if(request.getMethod().equals("GET")) {
                 if(url.startsWith("/user/create")) {
-                    queryStringToken = HttpRequestUtils.parseQueryString(request.getQueryString());
+                    Map<String, String> queryStringToken = HttpRequestUtils.parseQueryString(request.getQueryString());
 
                     User user = User.builder()
-                            .userId(queryStringToken.get("userId"))
-                            .password(queryStringToken.get("password"))
-                            .name(queryStringToken.get("name"))
-                            .email(queryStringToken.get("email"))
+                            .userId(URLDecoder.decode(queryStringToken.get("userId"), StandardCharsets.UTF_8))
+                            .password(URLDecoder.decode(queryStringToken.get("password"), StandardCharsets.UTF_8))
+                            .name(URLDecoder.decode(queryStringToken.get("name"), StandardCharsets.UTF_8))
+                            .email(URLDecoder.decode(queryStringToken.get("email"), StandardCharsets.UTF_8))
                             .build();
 
                     DataBase.addUser(user);
@@ -58,7 +56,7 @@ public class RequestHandler extends Thread {
                 } else if(url.equals("/user/list")){
                     String cookie = request.getHeaders().get("Cookie");
 
-                    headerToken = HttpRequestUtils.parseCookies(cookie);
+                    Map<String, String> headerToken = HttpRequestUtils.parseCookies(cookie);
 
                     StringBuilder sb = new StringBuilder();
 
@@ -91,16 +89,16 @@ public class RequestHandler extends Thread {
                     }
                 }
             } else if(request.getMethod().equals("POST")) {
-                if (request.getUrl().equals("/user/create")) {
+                if (url.equals("/user/create")) {
                     String body =  request.getBody();
 
-                    bodyToken = HttpRequestUtils.parseQueryString(body);
+                    Map<String, String> bodyToken = HttpRequestUtils.parseQueryString(body);
 
                     User user = User.builder()
-                            .userId(bodyToken.get("userId"))
-                            .password(bodyToken.get("password"))
-                            .name(bodyToken.get("name"))
-                            .email(bodyToken.get("email"))
+                            .userId(URLDecoder.decode(bodyToken.get("userId"), StandardCharsets.UTF_8))
+                            .password(URLDecoder.decode(bodyToken.get("password"), StandardCharsets.UTF_8))
+                            .name(URLDecoder.decode(bodyToken.get("name"), StandardCharsets.UTF_8))
+                            .email(URLDecoder.decode(bodyToken.get("email"), StandardCharsets.UTF_8))
                             .build();
 
                     DataBase.addUser(user);
@@ -110,10 +108,10 @@ public class RequestHandler extends Thread {
                     response302Header(dos, "/index.html");
 
                     return;
-                } else if(request.getUrl().equals("/user/login")){
+                } else if(url.equals("/user/login")){
                     String body =  request.getBody();
 
-                    bodyToken = HttpRequestUtils.parseQueryString(body);
+                    Map<String, String> bodyToken = HttpRequestUtils.parseQueryString(body);
 
                     User user = DataBase.findUserById(bodyToken.get("userId"));
 
@@ -182,8 +180,6 @@ public class RequestHandler extends Thread {
     private void response302HeaderWithCookie(DataOutputStream dos, String location, String cookie) {
         try{
             dos.writeBytes("HTTP/1.1 302 FOUND \r\n");
-            //Path=/ 를 붙여야 브라우저가 모든 URL 요청 시 cookie값을 보냄
-            //없으면 저장되는 범위가 현재 요청한 URL과 동일한 경로에만 유효할 수 있음
             dos.writeBytes("Set-Cookie: " + cookie + "; Path=/\r\n");
             dos.writeBytes("Location: " + location + "\r\n");
             dos.writeBytes("\r\n");

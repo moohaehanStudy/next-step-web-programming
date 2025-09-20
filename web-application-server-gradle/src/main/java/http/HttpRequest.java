@@ -1,7 +1,6 @@
 package http;
 
 import lombok.extern.slf4j.Slf4j;
-import util.HttpRequestUtils;
 import util.IOUtils;
 
 import java.io.BufferedReader;
@@ -21,19 +20,18 @@ public class HttpRequest {
     public HttpRequest (BufferedReader b) throws IOException {
         String line =  b.readLine();
         String[] firstTokens = line.split(" ");
-        String url = firstTokens[1];
+        url = firstTokens[1];
         method = firstTokens[0];
 
         log.debug("URL: " + url);
 
-        this.url = url;
-
         int index = url.indexOf("?");
 
         if(index == -1) {
-            log.debug("? 없음");
+            requestPath = url;
+
         } else{
-            this.requestPath = url.substring(0, index);
+            requestPath = url.substring(0, index);
 
             queryString = url.substring(index + 1);
         }
