@@ -4,6 +4,7 @@ import http.HttpRequest;
 import model.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import util.HttpRequestUtils;
 
 import java.io.*;
 import java.net.Socket;
@@ -28,32 +29,35 @@ public class RequestHandler extends Thread {
             HttpRequest request = new HttpRequest(reader);
 
             String url = request.getUrl();
-            Map<String, String> params = request.getParams();
-
-            StringBuilder sb = new StringBuilder();
-            String line;
-
-            log.debug("URL : {}", url);
 
             if(url.startsWith("/user/create") && request.getMethod().equals("GET")) {
+                Map<String, String> queryStringToken = HttpRequestUtils.parseQueryString(request.getQueryString());
+
                 User user = User.builder()
-                        .userId(params.get("userId"))
-                        .password(params.get("password"))
-                        .name(params.get("name"))
-                        .email(params.get("email"))
+                        .userId(queryStringToken.get("userId"))
+                        .password(queryStringToken.get("password"))
+                        .name(queryStringToken.get("name"))
+                        .email(queryStringToken.get("email"))
                         .build();
 
-                log.debug("User : {}", user);
+                log.debug("User : {} with Method : {}", user, request.getMethod());
             } else if(url.startsWith("/user/create") && request.getMethod().equals("POST")) {
+                String body =  request.getBody();
 
+                Map<String, String> bodyToken = HttpRequestUtils.parseQueryString(body);
+
+                User user = User.builder()
+                        .userId(bodyToken.get("userId"))
+                        .password(bodyToken.get("password"))
+                        .name(bodyToken.get("name"))
+                        .email(bodyToken.get("email"))
+                        .build();
+
+                log.debug("User : {} with Method : {}", user, request.getMethod());
+
+            } else{
+                log.debug("아직 지원하지 않는 방식입니다.");
             }
-
-            //요청 읽기
-            while ((line = reader.readLine()) != null && !line.isEmpty()) {
-                sb.append(line);
-            }
-
-            log.info("Header: {}", sb);
 
             byte[] bytes = Files.readAllBytes(new File("./webapp" + url).toPath());
 

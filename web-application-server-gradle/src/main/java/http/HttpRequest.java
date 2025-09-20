@@ -2,6 +2,7 @@ package http;
 
 import lombok.extern.slf4j.Slf4j;
 import util.HttpRequestUtils;
+import util.IOUtils;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -13,11 +14,13 @@ public class HttpRequest {
     private String url;
     private String requestPath;
     private String method;
-    private Map<String, String> params = new HashMap<>();
+    private String queryString;
+    private Map<String, String> headers = new HashMap<>();
+    private String body;
 
     public HttpRequest (BufferedReader b) throws IOException {
-        String firstLine =  b.readLine();
-        String[] firstTokens = firstLine.split(" ");
+        String line =  b.readLine();
+        String[] firstTokens = line.split(" ");
         String url = firstTokens[1];
         method = firstTokens[0];
 
@@ -32,9 +35,20 @@ public class HttpRequest {
         } else{
             this.requestPath = url.substring(0, index);
 
-            String queryString = url.substring(index + 1);
+            queryString = url.substring(index + 1);
+        }
 
-            params = HttpRequestUtils.parseQueryString(queryString);
+        //요청 헤더 읽기
+        while ((line = b.readLine()) != null && !line.isEmpty()) {
+            String [] tokens = line.split(":");
+
+            headers.put(tokens[0].trim(), tokens[1].trim());
+        }
+
+        //body 읽기
+        if(headers.containsKey("Content-Length")){
+            int length = Integer.parseInt(headers.get("Content-Length"));
+            body = IOUtils.readData(b, length);
         }
     }
 
@@ -46,11 +60,19 @@ public class HttpRequest {
         return requestPath;
     }
 
-    public Map<String, String> getParams() {
-        return params;
+    public String getQueryString() {
+        return queryString;
     }
 
     public String getMethod() {
         return method;
+    }
+
+    public Map<String, String> getHeaders() {
+        return headers;
+    }
+
+    public String getBody() {
+        return body;
     }
 }
