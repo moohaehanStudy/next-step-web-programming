@@ -12,12 +12,14 @@ import java.util.Map;
 public class HttpRequest {
     private String url;
     private String requestPath;
+    private String method;
     private Map<String, String> params = new HashMap<>();
 
     public HttpRequest (BufferedReader b) throws IOException {
         String firstLine =  b.readLine();
         String[] firstTokens = firstLine.split(" ");
         String url = firstTokens[1];
+        method = firstTokens[0];
 
         log.debug("URL: " + url);
 
@@ -46,5 +48,9 @@ public class HttpRequest {
 
     public Map<String, String> getParams() {
         return params;
+    }
+
+    public String getMethod() {
+        return method;
     }
 }

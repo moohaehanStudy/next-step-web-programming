@@ -35,7 +35,7 @@ public class RequestHandler extends Thread {
 
             log.debug("URL : {}", url);
 
-            if(url.startsWith("/user/create")){
+            if(url.startsWith("/user/create") && request.getMethod().equals("GET")) {
                 User user = User.builder()
                         .userId(params.get("userId"))
                         .password(params.get("password"))
@@ -44,6 +44,8 @@ public class RequestHandler extends Thread {
                         .build();
 
                 log.debug("User : {}", user);
+            } else if(url.startsWith("/user/create") && request.getMethod().equals("POST")) {
+
             }
 
             //요청 읽기
@@ -51,7 +53,7 @@ public class RequestHandler extends Thread {
                 sb.append(line);
             }
 
-            log.info("Request: {}", sb);
+            log.info("Header: {}", sb);
 
             byte[] bytes = Files.readAllBytes(new File("./webapp" + url).toPath());
 
