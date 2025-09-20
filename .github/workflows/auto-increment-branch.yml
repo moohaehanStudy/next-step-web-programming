@@ -3,10 +3,12 @@ name: Branch naming convention
 on:
   pull_request:
     types: [closed]
+    branches-ignore:
+      - main
 
 jobs:
   create-next-branch:
-    if: github.event.pull_request.merged == true
+    if: github.event.pull_request.merged == true && github.event.pull_request.base.ref != 'main'
     runs-on: ubuntu-latest
 
     permissions:
