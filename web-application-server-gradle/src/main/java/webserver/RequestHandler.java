@@ -27,6 +27,7 @@ public class RequestHandler extends Thread {
         try (InputStream in = connection.getInputStream(); OutputStream out = connection.getOutputStream()) {
             BufferedReader reader = new BufferedReader(new InputStreamReader(in));
             HttpRequest request = new HttpRequest(reader);
+            DataOutputStream dos = new DataOutputStream(out);
 
             String url = request.getUrl();
 
@@ -39,6 +40,8 @@ public class RequestHandler extends Thread {
                         .name(queryStringToken.get("name"))
                         .email(queryStringToken.get("email"))
                         .build();
+
+                response302Header(dos, "/index.html");
 
                 log.debug("User : {} with Method : {}", user, request.getMethod());
             } else if(url.startsWith("/user/create") && request.getMethod().equals("POST")) {
@@ -55,13 +58,14 @@ public class RequestHandler extends Thread {
 
                 log.debug("User : {} with Method : {}", user, request.getMethod());
 
+                response302Header(dos, "/index.html");
+
             } else{
                 log.debug("아직 지원하지 않는 방식입니다.");
             }
 
             byte[] bytes = Files.readAllBytes(new File("./webapp" + url).toPath());
 
-            DataOutputStream dos = new DataOutputStream(out);
             response200Header(dos, bytes.length);
             responseBody(dos, bytes);
 
@@ -75,6 +79,16 @@ public class RequestHandler extends Thread {
             dos.writeBytes("HTTP/1.1 200 OK \r\n");
             dos.writeBytes("Content-Type: text/html;charset=utf-8\r\n");
             dos.writeBytes("Content-Length: " + lengthOfBodyContent + "\r\n");
+            dos.writeBytes("\r\n");
+        } catch (IOException e) {
+            log.error(e.getMessage());
+        }
+    }
+
+    private void response302Header(DataOutputStream dos, String location) {
+        try{
+            dos.writeBytes("HTTP/1.1 302 FOUND \r\n");
+            dos.writeBytes("Location: " + location + "\r\n");
             dos.writeBytes("\r\n");
         } catch (IOException e) {
             log.error(e.getMessage());
