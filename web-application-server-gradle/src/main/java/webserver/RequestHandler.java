@@ -1,12 +1,14 @@
 package webserver;
 
 import http.HttpRequest;
+import model.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.net.Socket;
 import java.nio.file.Files;
+import java.util.Map;
 
 public class RequestHandler extends Thread {
     private static final Logger log = LoggerFactory.getLogger(RequestHandler.class);
@@ -23,30 +25,36 @@ public class RequestHandler extends Thread {
 
         try (InputStream in = connection.getInputStream(); OutputStream out = connection.getOutputStream()) {
             BufferedReader reader = new BufferedReader(new InputStreamReader(in));
+            HttpRequest request = new HttpRequest(reader);
+
+            String url = request.getUrl();
+            Map<String, String> params = request.getParams();
 
             StringBuilder sb = new StringBuilder();
             String line;
 
-            HttpRequest request = new HttpRequest(reader);
-
-            String url = request.getUrl();
-
             log.debug("URL : {}", url);
 
-            //요청 읽기
-            while(!"".equals(line = reader.readLine())) {
-                sb.append(line);
+            if(url.startsWith("/user/create")){
+                User user = User.builder()
+                        .userId(params.get("userId"))
+                        .password(params.get("password"))
+                        .name(params.get("name"))
+                        .email(params.get("email"))
+                        .build();
 
-                if(line == null) return;
+                log.debug("User : {}", user);
+            }
+
+            //요청 읽기
+            while ((line = reader.readLine()) != null && !line.isEmpty()) {
+                sb.append(line);
             }
 
             log.info("Request: {}", sb);
 
             byte[] bytes = Files.readAllBytes(new File("./webapp" + url).toPath());
 
-            log.info("Response : {}", new String(bytes));
-
-            // TODO 사용자 요청에 대한 처리는 이 곳에 구현하면 된다.
             DataOutputStream dos = new DataOutputStream(out);
             response200Header(dos, bytes.length);
             responseBody(dos, bytes);
