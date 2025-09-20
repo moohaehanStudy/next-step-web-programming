@@ -10,6 +10,7 @@ import util.HttpRequestUtils;
 import java.io.*;
 import java.net.Socket;
 import java.nio.file.Files;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -32,26 +33,63 @@ public class RequestHandler extends Thread {
             DataOutputStream dos = new DataOutputStream(out);
             Map<String, String> queryStringToken = new HashMap<>();
             Map<String, String> bodyToken = new HashMap<>();
+            Map<String, String> headerToken = new HashMap<>();
 
             String url = request.getUrl();
 
-            if(url.startsWith("/user/create") && request.getMethod().equals("GET")) {
-                queryStringToken = HttpRequestUtils.parseQueryString(request.getQueryString());
+            if(request.getMethod().equals("GET")) {
+                if(url.startsWith("/user/create")) {
+                    queryStringToken = HttpRequestUtils.parseQueryString(request.getQueryString());
 
-                User user = User.builder()
-                        .userId(queryStringToken.get("userId"))
-                        .password(queryStringToken.get("password"))
-                        .name(queryStringToken.get("name"))
-                        .email(queryStringToken.get("email"))
-                        .build();
+                    User user = User.builder()
+                            .userId(queryStringToken.get("userId"))
+                            .password(queryStringToken.get("password"))
+                            .name(queryStringToken.get("name"))
+                            .email(queryStringToken.get("email"))
+                            .build();
 
-                DataBase.addUser(user);
+                    DataBase.addUser(user);
 
-                response302Header(dos, "/index.html");
+                    response302Header(dos, "/index.html");
 
-                log.debug("User : {} with Method : {}", user, request.getMethod());
+                    log.debug("User : {} with Method : {}", user, request.getMethod());
 
-                return;
+                    return;
+                } else if(url.equals("/user/list")){
+                    String cookie = request.getHeaders().get("Cookie");
+
+                    headerToken = HttpRequestUtils.parseCookies(cookie);
+
+                    StringBuilder sb = new StringBuilder();
+
+                    if(headerToken.containsKey("logined") && headerToken.get("logined").equals("true")) {
+                        Collection<User> users = DataBase.findAll();
+
+                        sb.append("<html>");
+                        sb.append("<head><meta charset=\"UTF-8\"><title>Users</title></head>");
+                        sb.append("<body>");
+                        sb.append("<h2>사용자 목록</h2>");
+                        sb.append("<table border='1'>");
+                        sb.append("<tr><th>userId</th><th>name</th><th>email</th></tr>");
+
+                        for (User u : users) {
+                            sb.append("<tr>");
+                            sb.append("<td>").append(u.getUserId()).append("</td>");
+                            sb.append("<td>").append(u.getName()).append("</td>");
+                            sb.append("<td>").append(u.getEmail()).append("</td>");
+                            sb.append("</tr>");
+                        }
+
+                        sb.append("</table>");
+                        sb.append("</body>");
+                        sb.append("</html>");
+
+                        response200Header(dos, sb.length(), url);
+                        responseBody(dos, sb.toString().getBytes());
+                    }else if(!headerToken.containsKey("logined") || headerToken.get("logined").equals("failed")) {
+                        response302HeaderWithCookie(dos, "/user/login.html", "logined=failed");
+                    }
+                }
             } else if(request.getMethod().equals("POST")) {
                 if (request.getUrl().equals("/user/create")) {
                     String body =  request.getBody();
@@ -103,7 +141,7 @@ public class RequestHandler extends Thread {
 
             byte[] bytes = Files.readAllBytes(new File("./webapp" + url).toPath());
 
-            response200Header(dos, bytes.length);
+            response200Header(dos, bytes.length, url);
             responseBody(dos, bytes);
 
         } catch (IOException e) {
@@ -111,15 +149,24 @@ public class RequestHandler extends Thread {
         }
     }
 
-    private void response200Header(DataOutputStream dos, int lengthOfBodyContent) {
+    private void response200Header(DataOutputStream dos, int lengthOfBodyContent, String url) {
         try {
             dos.writeBytes("HTTP/1.1 200 OK \r\n");
-            dos.writeBytes("Content-Type: text/html;charset=utf-8\r\n");
+            dos.writeBytes("Content-Type: "+ getContentType(url) + "\r\n");
             dos.writeBytes("Content-Length: " + lengthOfBodyContent + "\r\n");
             dos.writeBytes("\r\n");
         } catch (IOException e) {
             log.error(e.getMessage());
         }
+    }
+
+    private String getContentType(String url) {
+        String type = "text/html;charset=UTF-8";
+
+        if(url.endsWith(".css"))
+            type = "text/css";
+
+        return type;
     }
 
     private void response302Header(DataOutputStream dos, String location) {
