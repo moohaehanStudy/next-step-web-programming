@@ -4,6 +4,7 @@ import model.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import util.HttpRequestUtils;
+import util.IOUtils;
 
 import java.io.*;
 import java.net.Socket;
@@ -27,24 +28,20 @@ public class RequestHandler extends Thread {
                 connection.getPort());
 
         try (InputStream in = connection.getInputStream(); OutputStream out = connection.getOutputStream()) {
-
             BufferedReader br = new BufferedReader(new InputStreamReader(in));
 
-            // RequestLine
-            String line = br.readLine();
-            log.info("request line : {}", line);
-            if (line == null) {return;}
+            String requestLine = br.readLine();
+            if (requestLine == null || requestLine.trim().isEmpty()) { return; }
 
-            String[] tokens = line.split(" ");
-            for (int i = 0; i < tokens.length; i++) {log.info("tokens : {}", tokens[i]);}
+            // Request URL
+            String[] tokens = requestLine.split(" ");
+            String httpMethod = tokens[0];
             String url = tokens[1];
-
-            // Request URI
+            String protocol = tokens[2];
             String path;
             String params = "";
             char seperator = '?';
             int seperatorIndex = url.indexOf(seperator);
-
             if (seperatorIndex != -1) {
                 path = url.substring(0, seperatorIndex);
                 params = url.substring(seperatorIndex + 1);
@@ -52,29 +49,57 @@ public class RequestHandler extends Thread {
                 path = url;
             }
 
-            if (!params.isEmpty()) {
-                Map<String, String> queryParams = HttpRequestUtils.parseQueryString(params);
-
-                String userId = URLDecoder.decode(queryParams.get("userId"), StandardCharsets.UTF_8);
-                String password = URLDecoder.decode(queryParams.get("password"), StandardCharsets.UTF_8);
-                String name = URLDecoder.decode(queryParams.get("name"), StandardCharsets.UTF_8);
-                String email = URLDecoder.decode(queryParams.get("email"), StandardCharsets.UTF_8);
-
-                User user = new User(userId, password, name, email);
-                log.info("User details - ID: {}, Name: {}, Email: {}", userId, name, email);
-            }
-
             // Header
-            while (!"".equals(line) && line != null) {
-                line = br.readLine();
-                log.info("Header: {}", line);
+            int contentLength = 0;
+            while (requestLine != null && !requestLine.trim().isEmpty()) {
+                log.info("Header: {}", requestLine);
+                if (requestLine.startsWith("Content-Length:")) {
+                    contentLength = Integer.parseInt(requestLine.split(":")[1].trim());
+                }
+                requestLine = br.readLine();
             }
 
-            DataOutputStream dos = new DataOutputStream(out);
-            byte[] body = Files.readAllBytes(Paths.get("./webapp" + url));
+            if (httpMethod.equals("GET")) {
+                if (!params.isEmpty()) {
+                    Map<String, String> queryParams = HttpRequestUtils.parseQueryString(params);
 
-            response200Header(dos, body.length);
-            responseBody(dos, body);
+                    String userId = URLDecoder.decode(queryParams.get("userId"), StandardCharsets.UTF_8);
+                    String password = URLDecoder.decode(queryParams.get("password"), StandardCharsets.UTF_8);
+                    String name = URLDecoder.decode(queryParams.get("name"), StandardCharsets.UTF_8);
+                    String email = URLDecoder.decode(queryParams.get("email"), StandardCharsets.UTF_8);
+
+                    User user = new User(userId, password, name, email);
+                }
+                DataOutputStream dos = new DataOutputStream(out);
+                byte[] body = Files.readAllBytes(Paths.get("./webapp" + url));
+
+                response200Header(dos, body.length);
+                responseBody(dos, body);
+            }
+
+            if (httpMethod.equals("POST")) {
+
+                if (contentLength > 0) {
+                    String bodyContent = IOUtils.readData(br, contentLength);
+                    log.info("body: {}", bodyContent);
+
+                    Map<String, String> queryParams = HttpRequestUtils.parseQueryString(bodyContent);
+
+                    String userId = URLDecoder.decode(queryParams.get("userId"), StandardCharsets.UTF_8);
+                    String password = URLDecoder.decode(queryParams.get("password"), StandardCharsets.UTF_8);
+                    String name = URLDecoder.decode(queryParams.get("name"), StandardCharsets.UTF_8);
+                    String email = URLDecoder.decode(queryParams.get("email"), StandardCharsets.UTF_8);
+
+                    User user = new User(userId, password, name, email);
+                    log.info("User details - ID: {}, Name: {}, Email: {}", userId, name, email);
+                }
+                DataOutputStream dos = new DataOutputStream(out);
+                byte[] body = Files.readAllBytes(Paths.get("./webapp/index.html"));
+
+                response200Header(dos, body.length);
+                responseBody(dos, body);
+            }
+
         } catch (IOException e) {
             log.error(e.getMessage());
         }
