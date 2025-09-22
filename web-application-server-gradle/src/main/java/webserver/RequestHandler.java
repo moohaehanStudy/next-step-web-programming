@@ -1,12 +1,17 @@
 package webserver;
 
+import model.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import util.HttpRequestUtils;
 
 import java.io.*;
 import java.net.Socket;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.Map;
 
 public class RequestHandler extends Thread {
     private static final Logger log = LoggerFactory.getLogger(RequestHandler.class);
@@ -34,6 +39,31 @@ public class RequestHandler extends Thread {
             for (int i = 0; i < tokens.length; i++) {log.info("tokens : {}", tokens[i]);}
             String url = tokens[1];
 
+            // Request URI
+            String path;
+            String params = "";
+            char seperator = '?';
+            int seperatorIndex = url.indexOf(seperator);
+
+            if (seperatorIndex != -1) {
+                path = url.substring(0, seperatorIndex);
+                params = url.substring(seperatorIndex + 1);
+            } else {
+                path = url;
+            }
+
+            if (!params.isEmpty()) {
+                Map<String, String> queryParams = HttpRequestUtils.parseQueryString(params);
+
+                String userId = URLDecoder.decode(queryParams.get("userId"), StandardCharsets.UTF_8);
+                String password = URLDecoder.decode(queryParams.get("password"), StandardCharsets.UTF_8);
+                String name = URLDecoder.decode(queryParams.get("name"), StandardCharsets.UTF_8);
+                String email = URLDecoder.decode(queryParams.get("email"), StandardCharsets.UTF_8);
+
+                User user = new User(userId, password, name, email);
+                log.info("User details - ID: {}, Name: {}, Email: {}", userId, name, email);
+            }
+
             // Header
             while (!"".equals(line) && line != null) {
                 line = br.readLine();
@@ -41,7 +71,7 @@ public class RequestHandler extends Thread {
             }
 
             DataOutputStream dos = new DataOutputStream(out);
-            byte[] body = Files.readAllBytes(Paths.get("./webapp/index.html"));
+            byte[] body = Files.readAllBytes(Paths.get("./webapp" + url));
 
             response200Header(dos, body.length);
             responseBody(dos, body);
