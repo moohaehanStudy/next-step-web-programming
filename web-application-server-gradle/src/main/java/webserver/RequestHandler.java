@@ -11,6 +11,7 @@ import java.io.*;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -20,6 +21,7 @@ public class RequestHandler extends Thread {
     private Socket connection;
 
     private static final String BASE_REDIRECT_URL = "/index.html";
+    private static final String LOGIN_URL = "/user/login.html";
     private static final String LOGIN_FAILED_URL = "/user/login_failed.html";
 
     public RequestHandler(Socket connectionSocket) {
@@ -44,6 +46,7 @@ public class RequestHandler extends Thread {
 
 
             int contentLength = 0;
+            boolean logined = false;
 
             while((request = reader.readLine()) != null && !request.isEmpty()){
                 String[] parse = request.split(":");
@@ -52,6 +55,13 @@ public class RequestHandler extends Thread {
 
                 if(header.containsKey("Content-Length")){
                     contentLength = Integer.parseInt(header.get("Content-Length"));
+                }
+
+                if(header.containsKey("Cookie")){
+                    Map<String, String> cookies = HttpRequestUtils.parseCookies(header.get("Cookie"));
+                    String cookieLogined = cookies.get("logined");
+                    if(cookieLogined == null) logined = false;
+                    else logined = Boolean.parseBoolean(cookieLogined);
                 }
             }
 
@@ -109,6 +119,34 @@ public class RequestHandler extends Thread {
                     response302LoginedHeader(dos, body.length);
                     responseBody(dos, body);
                 }
+            }
+            else if(requestUrl.equals("/user/list")){
+                // 1. 쿠키 값을 이용해 해당 유저가 로그인 상태인지 판단.
+                // true 라면 list.html로 false라면 로그인 페이지로 이동시킨다.
+                // 리스트 항목을 보여주는 것은 StringBuilder 클래스를 활용한다.
+                if(!logined){
+                    requestUrl = BASE_REDIRECT_URL;
+                    DataOutputStream dos = new DataOutputStream(out);
+                    byte[] body = Files.readAllBytes(new File("./webapp"+requestUrl).toPath());
+                    response200Header(dos, body.length);
+                    responseBody(dos, body);
+                }
+
+                Collection<User> users = DataBase.findAll();
+                StringBuilder sb = new StringBuilder();
+                sb.append("<table border='1'>");
+                for(User user : users){
+                    sb.append("<tr>");
+                    sb.append("<td>" + user.getUserId() + "</td>");
+                    sb.append("<td>" + user.getName() + "</td>");
+                    sb.append("</tr>");
+                }
+                sb.append("</table>");
+                DataOutputStream dos = new DataOutputStream(out);
+                byte[] body = sb.toString().getBytes(StandardCharsets.UTF_8);
+                response200Header(dos, body.length);
+                responseBody(dos, body);
+
             }
             else {
                 // TODO 사용자 요청에 대한 처리는 이 곳에 구현하면 된다.
