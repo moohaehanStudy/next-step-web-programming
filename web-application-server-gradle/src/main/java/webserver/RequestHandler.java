@@ -29,8 +29,7 @@ public class RequestHandler extends Thread {
                 connection.getPort());
 
         try (InputStream in = connection.getInputStream(); OutputStream out = connection.getOutputStream()) {
-            BufferedReader reader = new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8));
-            HttpRequest request = new HttpRequest(reader);
+            HttpRequest request = new HttpRequest(in);
             DataOutputStream dos = new DataOutputStream(out);
 
             String url = request.getUrl();
@@ -38,10 +37,8 @@ public class RequestHandler extends Thread {
 
             if(request.getMethod().equals("GET")) {
                 if(requestPath.equals("/user/create")) {
-                    Map<String, String> queryStringToken = HttpRequestUtils.parseQueryString(request.getQueryString());
 
-                    User user = createUser(queryStringToken);
-
+                    User user = createUser(request.getParam("userId"), request.getParam("password"), request.getParam("name"), request.getParam("email"));
 
                     response302Header(dos, "/index.html");
 
@@ -85,11 +82,7 @@ public class RequestHandler extends Thread {
                 }
             } else if(request.getMethod().equals("POST")) {
                 if (requestPath.equals("/user/create")) {
-                    String body =  request.getBody();
-
-                    Map<String, String> bodyToken = HttpRequestUtils.parseQueryString(body);
-
-                    User user = createUser(bodyToken);
+                    User user = createUser(request.getParam("userId"), request.getParam("password"), request.getParam("name"), request.getParam("email"));
 
                     log.debug("User : {} with Method : {}", user, request.getMethod());
 
@@ -135,12 +128,12 @@ public class RequestHandler extends Thread {
         }
     }
 
-    private User createUser(Map<String, String> queryStringToken) {
+    private User createUser(String userId, String password, String name, String email) {
         User user = User.builder()
-                .userId(URLDecoder.decode(queryStringToken.get("userId"), StandardCharsets.UTF_8))
-                .password(URLDecoder.decode(queryStringToken.get("password"), StandardCharsets.UTF_8))
-                .name(URLDecoder.decode(queryStringToken.get("name"), StandardCharsets.UTF_8))
-                .email(URLDecoder.decode(queryStringToken.get("email"), StandardCharsets.UTF_8))
+                .userId(URLDecoder.decode(userId, StandardCharsets.UTF_8))
+                .password(URLDecoder.decode(password, StandardCharsets.UTF_8))
+                .name(URLDecoder.decode(name, StandardCharsets.UTF_8))
+                .email(URLDecoder.decode(email, StandardCharsets.UTF_8))
                 .build();
 
         DataBase.addUser(user);

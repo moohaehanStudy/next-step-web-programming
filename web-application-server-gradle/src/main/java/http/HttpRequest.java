@@ -1,10 +1,14 @@
 package http;
 
 import lombok.extern.slf4j.Slf4j;
+import util.HttpRequestUtils;
 import util.IOUtils;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -15,9 +19,12 @@ public class HttpRequest {
     private String method;
     private String queryString;
     private Map<String, String> headers = new HashMap<>();
+    private Map<String, String> params = new HashMap<>();
     private String body;
 
-    public HttpRequest (BufferedReader b) throws IOException {
+    public HttpRequest (InputStream in) throws IOException {
+        BufferedReader b = new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8));
+
         String line =  b.readLine();
         String[] firstTokens = line.split(" ");
         url = firstTokens[1];
@@ -48,6 +55,12 @@ public class HttpRequest {
             int length = Integer.parseInt(headers.get("Content-Length"));
             body = IOUtils.readData(b, length);
         }
+
+        if(method.equals("GET")) {
+            params = HttpRequestUtils.parseQueryString(queryString);
+        } else if(method.equals("POST")) {
+            params = HttpRequestUtils.parseQueryString(body);
+        }
     }
 
     public String getUrl() {
@@ -72,5 +85,13 @@ public class HttpRequest {
 
     public String getBody() {
         return body;
+    }
+
+    public String getHeader(String key) {
+        return headers.get(key);
+    }
+
+    public String getParam(String key) {
+        return params.get(key);
     }
 }
