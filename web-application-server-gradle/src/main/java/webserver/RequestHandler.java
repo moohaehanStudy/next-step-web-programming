@@ -29,31 +29,26 @@ public class RequestHandler extends Thread {
                 connection.getPort());
 
         try (InputStream in = connection.getInputStream(); OutputStream out = connection.getOutputStream()) {
-            BufferedReader reader = new BufferedReader(new InputStreamReader(in));
+            BufferedReader reader = new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8));
             HttpRequest request = new HttpRequest(reader);
             DataOutputStream dos = new DataOutputStream(out);
 
             String url = request.getUrl();
+            String requestPath = request.getRequestPath();
 
             if(request.getMethod().equals("GET")) {
-                if(url.startsWith("/user/create")) {
+                if(requestPath.equals("/user/create")) {
                     Map<String, String> queryStringToken = HttpRequestUtils.parseQueryString(request.getQueryString());
 
-                    User user = User.builder()
-                            .userId(URLDecoder.decode(queryStringToken.get("userId"), StandardCharsets.UTF_8))
-                            .password(URLDecoder.decode(queryStringToken.get("password"), StandardCharsets.UTF_8))
-                            .name(URLDecoder.decode(queryStringToken.get("name"), StandardCharsets.UTF_8))
-                            .email(URLDecoder.decode(queryStringToken.get("email"), StandardCharsets.UTF_8))
-                            .build();
+                    User user = createUser(queryStringToken);
 
-                    DataBase.addUser(user);
 
                     response302Header(dos, "/index.html");
 
                     log.debug("User : {} with Method : {}", user, request.getMethod());
 
                     return;
-                } else if(url.equals("/user/list")){
+                } else if(requestPath.equals("/user/list")){
                     String cookie = request.getHeaders().get("Cookie");
 
                     Map<String, String> headerToken = HttpRequestUtils.parseCookies(cookie);
@@ -89,26 +84,19 @@ public class RequestHandler extends Thread {
                     }
                 }
             } else if(request.getMethod().equals("POST")) {
-                if (url.equals("/user/create")) {
+                if (requestPath.equals("/user/create")) {
                     String body =  request.getBody();
 
                     Map<String, String> bodyToken = HttpRequestUtils.parseQueryString(body);
 
-                    User user = User.builder()
-                            .userId(URLDecoder.decode(bodyToken.get("userId"), StandardCharsets.UTF_8))
-                            .password(URLDecoder.decode(bodyToken.get("password"), StandardCharsets.UTF_8))
-                            .name(URLDecoder.decode(bodyToken.get("name"), StandardCharsets.UTF_8))
-                            .email(URLDecoder.decode(bodyToken.get("email"), StandardCharsets.UTF_8))
-                            .build();
-
-                    DataBase.addUser(user);
+                    User user = createUser(bodyToken);
 
                     log.debug("User : {} with Method : {}", user, request.getMethod());
 
                     response302Header(dos, "/index.html");
 
                     return;
-                } else if(url.equals("/user/login")){
+                } else if(requestPath.equals("/user/login")){
                     String body =  request.getBody();
 
                     Map<String, String> bodyToken = HttpRequestUtils.parseQueryString(body);
@@ -120,7 +108,7 @@ public class RequestHandler extends Thread {
                         response302HeaderWithCookie(dos, "/user/login_failed.html", "logined=failed");
                         return;
                     }else {
-                        if (user.getPassword().equals(bodyToken.get("password"))) {
+                        if (user.comparePassword(bodyToken.get("password"))) {
                             log.debug("Login Success : {}", user.getUserId());
                             response302HeaderWithCookie(dos, "/index.html", "logined=true");
                             return;
@@ -145,6 +133,19 @@ public class RequestHandler extends Thread {
         } catch (IOException e) {
             log.error(e.getMessage());
         }
+    }
+
+    private User createUser(Map<String, String> queryStringToken) {
+        User user = User.builder()
+                .userId(URLDecoder.decode(queryStringToken.get("userId"), StandardCharsets.UTF_8))
+                .password(URLDecoder.decode(queryStringToken.get("password"), StandardCharsets.UTF_8))
+                .name(URLDecoder.decode(queryStringToken.get("name"), StandardCharsets.UTF_8))
+                .email(URLDecoder.decode(queryStringToken.get("email"), StandardCharsets.UTF_8))
+                .build();
+
+        DataBase.addUser(user);
+
+        return user;
     }
 
     private void response200Header(DataOutputStream dos, int lengthOfBodyContent, String url) {
