@@ -47,12 +47,12 @@ public class HttpResponse {
     }
 
     private String getContentType(String url) {
-        String type = "text/html;charset=UTF-8";
+        String type = "text/html";
 
         if(url.endsWith(".css"))
             type = "text/css";
 
-        return type;
+        return type + ";charset=UTF-8";
     }
 
     public void responseBody(byte[] bytes){
