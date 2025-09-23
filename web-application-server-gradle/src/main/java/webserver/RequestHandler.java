@@ -82,10 +82,8 @@ public class RequestHandler extends Thread {
                 requestUrl = BASE_REDIRECT_URL;
 
                 DataOutputStream dos = new DataOutputStream(out);
-                byte[] body = Files.readAllBytes(new File("./webapp"+requestUrl).toPath());
                 log.debug("Sending POST request to webserver: {}", new File("./webapp"+requestUrl).toPath());
-                response302Header(dos, body.length);
-                responseBody(dos, body);
+                response302Header(dos, requestUrl);
             }
             else if(requestUrl.equals("/user/login")){
                 String httpBody = IOUtils.readData(reader, contentLength);
@@ -98,23 +96,17 @@ public class RequestHandler extends Thread {
                 if(user == null){
                     requestUrl = LOGIN_FAILED_URL;
                     DataOutputStream dos = new DataOutputStream(out);
-                    byte[] body = Files.readAllBytes(new File("./webapp"+requestUrl).toPath());
-                    response302LoginedFailedHeader(dos, body.length);
-                    responseBody(dos, body);
+                    response302LoginedFailedHeader(dos, requestUrl);
                 }
                 else{
-                    if(!user.getPassword().equals(password)) {
+                    if(!user.comparePassword(password)) {
                         requestUrl = LOGIN_FAILED_URL;
                         DataOutputStream dos = new DataOutputStream(out);
-                        byte[] body = Files.readAllBytes(new File("./webapp"+requestUrl).toPath());
-                        response302LoginedFailedHeader(dos, body.length);
-                        responseBody(dos, body);
+                        response302LoginedFailedHeader(dos, requestUrl);
                     }
                     requestUrl = BASE_REDIRECT_URL;
                     DataOutputStream dos = new DataOutputStream(out);
-                    byte[] body = Files.readAllBytes(new File("./webapp"+requestUrl).toPath());
-                    response302LoginedHeader(dos, body.length);
-                    responseBody(dos, body);
+                    response302LoginedHeader(dos, requestUrl);
                 }
             }
             else if(requestUrl.equals("/user/list")){
@@ -149,7 +141,6 @@ public class RequestHandler extends Thread {
                 responseBody(dos, body);
             }
             else {
-                // TODO 사용자 요청에 대한 처리는 이 곳에 구현하면 된다.
                 DataOutputStream dos = new DataOutputStream(out);
                 byte[] body = Files.readAllBytes(new File("./webapp"+requestUrl).toPath());
                 response200Header(dos, body.length);
@@ -171,35 +162,35 @@ public class RequestHandler extends Thread {
         }
     }
 
-    private void response302Header(DataOutputStream dos, int lengthOfBodyContent) {
+    private void response302Header(DataOutputStream dos, String locationUrl) {
         try {
             dos.writeBytes("HTTP/1.1 302 FOUND \r\n");
             dos.writeBytes("Content-Type: text/html;charset=utf-8\r\n");
-            dos.writeBytes("Content-Length: " + lengthOfBodyContent + "\r\n");
+            dos.writeBytes("Location: " + locationUrl + "\r\n");
             dos.writeBytes("\r\n");
         } catch (IOException e) {
             log.error(e.getMessage());
         }
     }
 
-    private void response302LoginedFailedHeader(DataOutputStream dos, int lengthOfBodyContent) {
+    private void response302LoginedFailedHeader(DataOutputStream dos, String locationUrl) {
         try {
             dos.writeBytes("HTTP/1.1 302 FOUND \r\n");
             dos.writeBytes("Content-Type: text/html;charset=utf-8\r\n");
-            dos.writeBytes("Content-Length: " + lengthOfBodyContent + "\r\n");
             dos.writeBytes("Set-Cookie: logined=false\r\n");
+            dos.writeBytes("Location: " + locationUrl + "\r\n");
             dos.writeBytes("\r\n");
         } catch (IOException e) {
             log.error(e.getMessage());
         }
     }
 
-    private void response302LoginedHeader(DataOutputStream dos, int lengthOfBodyContent) {
+    private void response302LoginedHeader(DataOutputStream dos, String locationUrl) {
         try {
             dos.writeBytes("HTTP/1.1 302 FOUND \r\n");
             dos.writeBytes("Content-Type: text/html;charset=utf-8\r\n");
-            dos.writeBytes("Content-Length: " + lengthOfBodyContent + "\r\n");
             dos.writeBytes("Set-Cookie: logined=true\r\n");
+            dos.writeBytes("Location: " + locationUrl + "\r\n");
             dos.writeBytes("\r\n");
         } catch (IOException e) {
             log.error(e.getMessage());
