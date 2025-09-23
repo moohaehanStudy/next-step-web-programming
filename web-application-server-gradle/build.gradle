@@ -4,6 +4,8 @@
 
 plugins {
     id 'java-library'
+    id 'application'
+    id 'com.github.johnrengelman.shadow' version '7.1.2'
     id 'maven-publish'
 }
 
@@ -28,6 +30,10 @@ group = 'org.nhnnext'
 version = '1.0'
 description = 'web-application-server'
 java.sourceCompatibility = JavaVersion.VERSION_11
+
+application {
+    mainClass = 'webserver.WebServer'
+}
 
 publishing {
     publications {
