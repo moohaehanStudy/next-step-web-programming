@@ -21,6 +21,9 @@ public class HttpResponse {
     }
 
     public void addHeader(String key, String value) {
+        if(!headers.containsKey(key)){
+            headers.remove(key);
+        }
         headers.put(key, value);
     }
 
@@ -88,4 +91,16 @@ public class HttpResponse {
         }
     }
 
+    public void response302Header(String location, String cookie){
+        try{
+            dos.writeBytes("HTTP/1.1 302 FOUND \r\n");
+            addHeader("Location", location);
+            addHeader("Set-Cookie", cookie);
+            addHeader("Content-Length", "0");
+            processHeader();
+            dos.flush();
+        } catch(IOException e){
+            log.error(e.getMessage());
+        }
+    }
 }

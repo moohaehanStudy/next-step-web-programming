@@ -50,3 +50,57 @@ response.addHeader("Set-Cookie", "logined=failed; Path=/");
 지금까지 2단계까지 했는데 고민점
 - run()에서 쿠키 값을 넣어주는 것이 맞는가? 차라리 302Header를 HttpResponse에 만들어서 한번에 처리하는 것이 맞지 않을까? 하는 생각이 든다
 - HttpResponse도 중복이 꽤나 있는 거 같아서 좀 더 짧게 가능한지를 고민해봐야할듯하다
+
+
+### 3단계
+```java
+    private static final Map<String, Controller> controllerMap;
+
+    static {
+        controllerMap = new HashMap<>();
+        controllerMap.put("/user/create", new CreateUserController());
+        controllerMap.put("/user/list", new ListUserController());
+        controllerMap.put("/user/login", new LoginController());
+    }
+```
+- 필요한 URL와 그에 알맞은 `controller`를 미리 매핑해두기
+```java
+String requestPath = request.getRequestPath();
+Controller controller = controllerMap.get(requestPath);
+            
+if(controller != null) {
+    controller.service(request, response);
+} else{
+    log.debug("아직 지원하지 않는 URL입니다.{}", requestPath);
+}
+response.forward(requestPath);
+```
+- `requestPath` 찾아서 그에 알맞은 `controller.service()` 호출
+
+```java
+public class AbstractController implements Controller {
+
+    @Override
+    public void service(HttpRequest request, HttpResponse response) {
+
+        if(request.getMethod().equals("GET")){
+            doGet(request, response);
+        } else if(request.getMethod().equals("POST")){
+            doPost(request, response);
+        }
+    }
+
+    protected void doPost(HttpRequest request, HttpResponse response) {}
+    protected void doGet(HttpRequest request, HttpResponse response) {}
+}
+```
+- protected는 private과 유사하지만, 상속받는 자식 클래스에서 사용을 할 수 있도록 해준다는 점에서 private과 차이가 있다.
+- 즉, 변수를 보호하고자 하면서도, 상속클래스에서 사용하기를 원하면,
+- 굳이 private 선언 후 getter&setter를 사용하여 가져오지 말고, 변수를 protected로 선언해주면 된다.
+[출처] [java 강의] 상속 / super / protected 접근 제어자 / object class|작성자 Yooni
+- 근데 찾아보니까 같은 패키지 내에 있으면 상관없다는 걸 보니,, 나에게는 해당이 안되는듯? 그래도 나중에 변경이 될지도 모르니 protected로 구현!
+
+### 해야할 거
+- cookie 키 값이 중복으로 들어올 때의 처리
+  - 원래 있던 키 찾아서 지우고, 새로 들어온걸로 처리로 해결완료
+- 
