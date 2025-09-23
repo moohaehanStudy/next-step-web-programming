@@ -54,3 +54,9 @@ tasks.withType(Javadoc) {
 tasks.named('test') {
     useJUnitPlatform()
 }
+
+jar {
+    manifest {
+        attributes 'Main-Class': application.mainClass
+    }
+}
