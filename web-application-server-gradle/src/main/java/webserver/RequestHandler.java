@@ -1,6 +1,7 @@
 package webserver;
 
 import db.DataBase;
+import http.HttpRequest;
 import model.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,7 +13,6 @@ import java.net.Socket;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Map;
 
 public class RequestHandler extends Thread {
@@ -32,37 +32,13 @@ public class RequestHandler extends Thread {
                 connection.getPort());
 
         try (InputStream in = connection.getInputStream(); OutputStream out = connection.getOutputStream()) {
-            BufferedReader reader = new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8));
+            HttpRequest request = new HttpRequest(in);
 
-            String request = reader.readLine();
-            if (request == null) return ;
-            String[] path = request.split(" ");
-            String httpMethod = path[0];
-            String url = path[1];
-
-            int index = url.indexOf("?");
-            String requestUrl = (index == -1)? url : url.substring(0, index);
-
-
-            int contentLength = 0;
-            boolean logined = false;
-
-            while((request = reader.readLine()) != null && !request.isEmpty()){
-                String[] parse = request.split(":");
-                Map<String, String> header = new HashMap<>();
-                header.put(parse[0], parse[1].trim());
-
-                if(header.containsKey("Content-Length")){
-                    contentLength = Integer.parseInt(header.get("Content-Length"));
-                }
-
-                if(header.containsKey("Cookie")){
-                    Map<String, String> cookies = HttpRequestUtils.parseCookies(header.get("Cookie"));
-                    String cookieLogined = cookies.get("logined");
-                    if(cookieLogined == null) logined = false;
-                    else logined = Boolean.parseBoolean(cookieLogined);
-                }
-            }
+            String url = request.getUrl();
+            String requestUrl = request.getRequestUrl();
+            int contentLength = request.getContentLength();
+            boolean logined = request.isLogined();
+            BufferedReader reader = request.getReader();
 
             if(requestUrl.equals("/user/create")){
                 String httpBody = IOUtils.readData(reader, contentLength);
@@ -132,7 +108,6 @@ public class RequestHandler extends Thread {
                 byte[] body = sb.toString().getBytes();
                 response200Header(dos, body.length);
                 responseBody(dos, body);
-
             }
             else if(url.endsWith(".css")){
                 DataOutputStream dos = new DataOutputStream(out);
