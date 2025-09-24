@@ -16,7 +16,7 @@ public class HttpRequestTest {
         HttpRequest httpRequest = new HttpRequest(in);
 
         assertEquals("GET", httpRequest.getMethod());
-        assertEquals("/user/create", httpRequest.getRequestPath());
+        assertEquals("/user/create", httpRequest.getUrl());
         assertEquals("keep-alive", httpRequest.getHeader("Connection"));
         assertEquals("soyun", httpRequest.getParam("userId"));
     }
@@ -28,7 +28,7 @@ public class HttpRequestTest {
         HttpRequest httpRequest = new HttpRequest(in);
 
         assertEquals("POST", httpRequest.getMethod());
-        assertEquals("/user/create", httpRequest.getRequestPath());
+        assertEquals("/user/create", httpRequest.getUrl());
         assertEquals("keep-alive", httpRequest.getHeader("Connection"));
         assertEquals("soyun", httpRequest.getParam("userId"));
     }

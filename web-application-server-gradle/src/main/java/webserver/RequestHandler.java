@@ -4,19 +4,15 @@ import controller.Controller;
 import controller.CreateUserController;
 import controller.ListUserController;
 import controller.LoginController;
-import db.DataBase;
 import http.HttpRequest;
 import http.HttpResponse;
-import model.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import util.HttpRequestUtils;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.Socket;
-import java.net.URLDecoder;
-import java.nio.charset.StandardCharsets;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -44,18 +40,25 @@ public class RequestHandler extends Thread {
             HttpRequest request = new HttpRequest(in);
             HttpResponse response = new HttpResponse(out);
 
-            String requestPath = request.getRequestPath();
+            String requestPath = getDefaultUrl(request.getUrl());
             Controller controller = controllerMap.get(requestPath);
 
             if(controller != null) {
                 controller.service(request, response);
             } else{
+                response.forward(requestPath);
                 log.debug("아직 지원하지 않는 URL입니다.{}", requestPath);
             }
-            response.forward(requestPath);
 
         }catch (IOException e) {
             log.error(e.getMessage());
         }
+    }
+
+    private String getDefaultUrl(String url) {
+        if (url.equals("/")) {
+            return "/index.html";
+        }
+        return url;
     }
 }
