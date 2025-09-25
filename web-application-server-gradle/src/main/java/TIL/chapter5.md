@@ -180,3 +180,81 @@ public class RequestLine {
 1. HTTP 요청과 응답 헤더, 본문 처리와 같은 데 시간을 투자함으로써 정작 중요한 로직을 구현하는 데 투자할 시간이 상대적으로 적다
 2. 동적 HTML을 지원하는 데 한계가 있다. 동적으로 HTML을 생성할 수 있지만 많은 코딩량을 필요로 한다
 3. 사용자가 입력한 데이터가 서버를 재시작하면 사라진다. 사용자가 입력한 데이터를 유지하려면 어떻게 해야할까?
+
+#### 서블릿 컨테이너, 서블릿/JSP를 활용한 문제 해결
+- 문제점 1,2번을 해결하기 위해 자바 진영에서 표준으로 정한 것이 서블릿 컨테이너와 서블릿/JSP이다
+- 서블릿: 앞에서 구현한 `controller`, `HttpRequest`, `HttpResponse`를 추상화해 인터페이스로 정의해 놓은 표준
+- 서블릿 컨테이너: 이 서블릿 표준에 대한 구현을 담당하고 있으며, 앞에서 구현한 웹 서버가 서블릿 컨테이너 역할
+
+#### 내가 구현한 웹 서버 동작 과정
+1. 서버를 시작하는 시점에 `controller`의 인스턴스 생성
+2. 요청 URL과 생성한 `controller` 인스턴스를 연결
+3. 클라이언트에서 요청이 오면 요청 URL에 해당하는 `Controller`를 찾아 `Controller`에 실질적인 작업 위임
+
+#### 서블릿 컨테이너와 서블릿의 동작 과정
+1. 서블릿 컨테이너는 서버가 시작할 때 서블릿 인스턴스를 생성
+2. 요청 URL과 서블릿 인스턴스를 연결
+3. 클라이언트에서 요청이 오면 요청 URL에 해당하는 서블릿을 찾아 서블릿에 모든 작업 위임
+
+#### 서블릿 코드
+```java
+@WebServlet("/hello")
+public class HelloWorldServlet extends HttpServlet {
+    @Override
+    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        PrintWriter out = resp.getWriter();
+        out.print("Hello World");
+    }
+}
+```
+- HttpServletRequest = HttpRequest
+- HttpServletResponse = HttpResponse
+- Controller 인터페이스 = 서블릿의 Servlet 인터페이스
+- AbstractController = HttpServlet
+
+- 서블릿 컨테이너는 서버를 시작할 때 클래스패스에 있는 클래스 중 HttpServlet을 상속하는 클래스를 찾은 후 `@WebServlet` 애노테이션의 값을 읽어 요청 URL과 서블릿을 연결하는 Map을 생성한다
+- 요청 URL에 대한 서블릿을 찾아 서비스하는 역할을 서블릿 컨테이너가 담당
+
+#### 서블릿 컨테이너의 중요한 역할
+1. 서블릿 클래스의 인스턴스 생성
+2. 요청 URL과 서블릿 인스턴스 매핑
+3. 클라이언트 요청에 해당하는 서블릿에 작업을 위임하는 역할
+4. 서블릿과 관련한 초기화(init), 소멸(destroy) 작업도 담당
+
+```java
+public interface Servlet {
+    public void init(ServletConfig config) throws ServletException;
+
+    public void service(ServletRequest req, ServletResponse res) throws ServletException, IOException;
+
+    public void destroy();
+
+    public ServletConfig getServletConfig();
+
+    public String getServletInfo();
+}
+```
+- 서블릿 컨테이너가 시작하고 종료할 때의 과정
+  1. 서블릿 컨테이너 시작
+  2. 클래스패스에 있는 Servlet 인터페이스를 구현하는 서블릿 클래스를 찾음
+  3. `@WebServlet` 설정을 통해 요청 URL과 서블릿 매핑
+  4. 서블릿 인스턴스 생성
+  5. `init()` 메서드를 호출해 초기화
+
+- 서블릿 컨테이너는 위 과정으로 서블릿 초기화를 완료한 후 클라이언트 요청이 있을 때까지 대기 상태로 있다가
+- 요청이 들어오면 요청 URL에 해당하는 서블릿을 찾아 `service()` 메서드를 호출한다
+- 서비스를 하다 서블릿 컨테이너를 종료하면 서블릿 컨테이너가 관리하고 있는 모든 서션릿의 `destroy()` 메서드를 호출해 소멸 작업을 진행한다
+
+**서블릿 컨테이너가 생성하는 서블릿 인스턴스의 개수**
+- 서블릿 컨테이너는 멀티스레드로 동작하는데, 새로운 스레드가 생성될 때마다 새로운 서블릿 인스턴스를 생성할까?
+  - 아님
+- 서블릿 컨테이너가 시작될 때 한번 생성된 서블릿은 모든 스레드가 같은 인스턴스를 재사용한다
+
+#### 공부해야할 거
+1. 서블릿 컨테이너
+2. 서블릿 라이프사이클
+3. 서블릿 컨테이너와 서블릿의 관계
+4. 서블릿 필터
+5. 스코드
+6. 쿠키
+7. 세
