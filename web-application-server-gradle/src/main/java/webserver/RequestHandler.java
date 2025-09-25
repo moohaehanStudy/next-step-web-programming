@@ -92,12 +92,19 @@ public class RequestHandler extends Thread {
 
                     User user = new User(userId, password, name, email);
                     log.info("User details - ID: {}, Name: {}, Email: {}", userId, name, email);
-                }
-                DataOutputStream dos = new DataOutputStream(out);
-                byte[] body = Files.readAllBytes(Paths.get("./webapp/index.html"));
 
-                response200Header(dos, body.length);
-                responseBody(dos, body);
+                    try {
+                        // TODO
+                        //  1. 데이터 검증
+                        //  2. DB 저장
+
+                        DataOutputStream dos = new DataOutputStream(out);
+                        response302Header(dos, "/index.html");
+                        log.info("success your sign up");
+                    } catch (Exception e) {
+                        log.error("User registration failed", e);
+                    }
+                }
             }
 
         } catch (IOException e) {
@@ -113,6 +120,17 @@ public class RequestHandler extends Thread {
             dos.writeBytes("\r\n");
         } catch (IOException e) {
             log.error(e.getMessage());
+        }
+    }
+
+    private void response302Header(DataOutputStream dos, String redirectUrl) {
+        try {
+            dos.writeBytes("HTTP/1.1 302 Found\r\n");
+            dos.writeBytes("Location: " + redirectUrl + "\r\n");
+            dos.writeBytes("Content-Length: 0\r\n");
+            dos.writeBytes("\r\n");
+        } catch (Exception e) {
+            log.error("Failed to send 302 redirect: " + e.getMessage());
         }
     }
 
