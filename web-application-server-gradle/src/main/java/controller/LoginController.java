@@ -21,14 +21,20 @@ public class LoginController extends AbstractController {
 
         if(user == null){
             log.warn("User not found : {}", bodyToken.get("userId"));
-            response.response302Header("/user/login_failed.html", "logined=failed; Path=/");
+            response.addHeader("Set-Cookie", "logined=failed; Path=/");
+            response.sendRedirect("/user/login_failed.html");
+            //response.response302Header("/user/login_failed.html", "logined=failed; Path=/");
         }else {
             if (user.comparePassword(bodyToken.get("password"))) {
                 log.debug("Login Success : {}", user.getUserId());
-                response.response302Header("/index.html", "logined=true; Path=/");
+                response.addHeader("Set-Cookie", "logined=true; Path=/");
+                response.sendRedirect("/index.html");
+                //response.response302Header("/index.html", "logined=true; Path=/");
             } else {
                 log.debug("Login Failed : {}", user.getUserId());
-                response.response302Header("/user/login_failed.html", "logined=failed; Path=/");
+                response.addHeader("Set-Cookie", "logined=failed; Path=/");
+                response.sendRedirect("/user/login_failed.html");
+                //response.response302Header("/user/login_failed.html", "logined=failed; Path=/");
             }
         }
     }

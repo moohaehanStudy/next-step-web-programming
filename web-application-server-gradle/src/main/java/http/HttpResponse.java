@@ -90,17 +90,4 @@ public class HttpResponse {
             log.error(e.getMessage());
         }
     }
-
-    public void response302Header(String location, String cookie){
-        try{
-            dos.writeBytes("HTTP/1.1 302 FOUND \r\n");
-            addHeader("Location", location);
-            addHeader("Set-Cookie", cookie);
-            addHeader("Content-Length", "0");
-            processHeader();
-            dos.flush();
-        } catch(IOException e){
-            log.error(e.getMessage());
-        }
-    }
 }
