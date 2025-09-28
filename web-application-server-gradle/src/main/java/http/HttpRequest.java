@@ -2,6 +2,7 @@ package http;
 
 import lombok.Getter;
 import util.HttpRequestUtils;
+import util.IOUtils;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -12,11 +13,8 @@ import java.util.Map;
 public class HttpRequest {
 
     private BufferedReader reader;
-
     private String request;
-    private String httpMethod;
-    private String url;
-    private String requestUrl;
+    private RequestLine requestLine;
 
     private int contentLength;
 
@@ -24,6 +22,7 @@ public class HttpRequest {
 
     private Map<String, String> header = new HashMap<>();
     private Map<String, String> cookies = new HashMap<>();
+    private Map<String, String> params = new HashMap<>();
 
     public HttpRequest(InputStream in) {
         try {
@@ -31,12 +30,8 @@ public class HttpRequest {
 
             request = reader.readLine();
             if(request == null) return ;
-            String[] path = request.split(" ");
-            httpMethod = path[0];
-            url = path[1];
 
-            int index = url.indexOf("?");
-            requestUrl = (index == -1)? url : url.substring(0, index);
+            requestLine = new RequestLine(request);
 
             contentLength = 0;
             logined = false;
@@ -55,6 +50,14 @@ public class HttpRequest {
                     if(cookieLogined == null) logined = false;
                     else logined = Boolean.parseBoolean(cookieLogined);
                 }
+            }
+
+            if(HttpMethod.POST == requestLine.getHttpMethod()){
+                String httpBody = IOUtils.readData(reader, Integer.parseInt(header.get("Content-Length")));
+                params = HttpRequestUtils.parseQueryString(httpBody);
+            }
+            else {
+                params = requestLine.getParams();
             }
         } catch (IOException e) {
             throw new RuntimeException(e);
