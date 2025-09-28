@@ -66,6 +66,7 @@
             <h2>회원 정보 수정</h2>
             <h3>정보: ${user.userId}</h3>
             <form action="/user/update" method="post">
+                <!-- 변경할 수 없는 사용자 ID값 전달 -->
                 <input type="hidden" name="userId" value="${user.userId}">
                 이름: <input type="text" name="name" value="${user.name}"><br>
                 비밀번호: <input type="text" name="password" value="${user.password}"><br>
