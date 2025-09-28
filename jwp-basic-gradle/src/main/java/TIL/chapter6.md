@@ -13,3 +13,4 @@ req.setAttribute("users", DataBase.findAll());
 - 그래서 나온 것이 **JSTL(JavaServer Pages Standard Library) 와 EL(Expression Language)**이다
   - JPS의 복잡도를 낮춰 유지보수를 쉽게 하자는 목적으로 MVC 패턴을 적용한 프레임워크
   - JSTL과 EL을 활용하면 JSP에서 자바 구문을 완전히 제거할 수 있다
+
