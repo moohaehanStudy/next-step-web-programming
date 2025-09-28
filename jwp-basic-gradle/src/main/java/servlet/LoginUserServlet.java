@@ -14,6 +14,11 @@ import java.io.IOException;
 @WebServlet("/user/login")
 public class LoginUserServlet extends HttpServlet {
     @Override
+    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+           resp.sendRedirect("/user/login.jsp");
+    }
+
+    @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse res) throws IOException, ServletException {
         req.setCharacterEncoding("utf-8");
         res.setContentType("text/html;charset=UTF-8");
@@ -23,7 +28,7 @@ public class LoginUserServlet extends HttpServlet {
         if(user == null){
             res.sendRedirect("/user/login_failed.html");
         } else {
-            if(user.getPassword().equals(req.getParameter("password"))){
+            if(user.getUserId().equals(req.getParameter("userId"))){
                 HttpSession session = req.getSession();
                 session.setAttribute("user", user);
                 res.sendRedirect("/index.jsp");
