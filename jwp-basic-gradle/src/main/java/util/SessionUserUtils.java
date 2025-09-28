@@ -3,6 +3,7 @@ package util;
 import model.User;
 
 import javax.servlet.http.HttpSession;
+import java.util.Objects;
 
 public class SessionUserUtils {
     public static final String USER_SESSION_KEY = "user";
@@ -21,14 +22,10 @@ public class SessionUserUtils {
     }
 
     public static boolean isSameUser(HttpSession session, User user){
-        if(!isLoggedIn(session)){
+        if(!isLoggedIn(session) || user == null){
             return false;
         }
 
-        if(user == null){
-            return false;
-        }
-
-        return user.isSameUser(getUserFromSession(session));
+        return user.isSameUser(Objects.requireNonNull(getUserFromSession(session)));
     }
 }
