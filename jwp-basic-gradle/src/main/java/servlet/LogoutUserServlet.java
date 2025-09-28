@@ -1,5 +1,7 @@
 package servlet;
 
+import util.SessionUserUtils;
+
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -12,10 +14,13 @@ import java.io.IOException;
 public class LogoutUserServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        HttpSession session = req.getSession();
+        if(SessionUserUtils.isLoggedIn(req.getSession())){
+            HttpSession session = req.getSession();
+            session.removeAttribute("user");
 
-        session.removeAttribute("user");
-
-        resp.sendRedirect("/index.jsp");
+            resp.sendRedirect("/index.jsp");
+        } else{
+            resp.sendRedirect("/user/login.jsp");
+        }
     }
 }

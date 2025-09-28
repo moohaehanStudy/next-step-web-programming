@@ -1,8 +1,10 @@
 package servlet;
 
 import db.DataBase;
+import model.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import util.SessionUserUtils;
 
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
@@ -22,8 +24,7 @@ public class ListUserServlet extends HttpServlet {
         resp.setCharacterEncoding("UTF-8");
         resp.setContentType("text/html;charset=UTF-8");
 
-        HttpSession session = req.getSession();
-        Object value = session.getAttribute("user");
+        User value = SessionUserUtils.getUserFromSession(req.getSession());
 
         if(value != null){
             req.setAttribute("users", DataBase.findAll());
@@ -33,7 +34,7 @@ public class ListUserServlet extends HttpServlet {
         } else {
             log.error("로그인 한 회원만 목록을 볼 수 있습니다. -> listuserServlet");
 
-            RequestDispatcher dispatcher = req.getRequestDispatcher("/index.jsp");
+            RequestDispatcher dispatcher = req.getRequestDispatcher("/user/login.jsp");
             dispatcher.forward(req, resp);
         }
     }

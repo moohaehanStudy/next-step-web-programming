@@ -27,6 +27,6 @@ public class CreateUserServlet extends HttpServlet {
         );
 
         DataBase.addUser(user);
-        res.sendRedirect("/user/list");
+        res.sendRedirect("/index.jsp");
     }
 }

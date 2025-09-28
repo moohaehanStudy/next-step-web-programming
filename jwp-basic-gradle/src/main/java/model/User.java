@@ -43,4 +43,8 @@ public class User {
     public boolean comparePassword(String password) {
         return this.password.equals(password);
     }
+
+    public boolean isSameUser(User userFromSession) {
+        return userId.equals(userFromSession.getUserId());
+    }
 }
