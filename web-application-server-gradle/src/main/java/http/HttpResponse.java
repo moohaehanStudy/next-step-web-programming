@@ -72,7 +72,7 @@ public class HttpResponse {
             dos.writeBytes("HTTP/1.1 302 FOUND \r\n");
             processHeaders();
             dos.writeBytes("Location: " + locationUrl + "\r\n");
-            // 쿠키가 필요한 경우 이 로직이 아닌 실행되는 로직에서 addHeader를 이용해 넣도록 위임한다.
+            // 쿠키 설정이 필요한 경우 이 로직이 아닌 실행되는 로직에서 addHeader를 이용해 넣도록 위임한다.
             dos.writeBytes("\r\n");
         } catch (IOException e) {
             log.error(e.getMessage());
