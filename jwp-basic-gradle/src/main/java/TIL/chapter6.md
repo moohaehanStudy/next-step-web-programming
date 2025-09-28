@@ -65,6 +65,16 @@ public class HomeServlet extends HttpServlet {
 - Dispatcher -> forward()
   - 클라이언트가 요청하면서 전송한 데이터를 그대로 유지한다
   - 같은 request영역을 공유하기에 req.setAttribute() 로 넣은 값도 유지됨
+  
+**그럼 어떨 때 forward, redirect를 쓰는가?**
+- RequestDispatcher.forward()
+  - 같은 서버 내에서 JSP, 다른 서블릿으로 내부적으로 연결할 때
+  - 로그인 후, 데이터와 함께 JSP로 바로 넘겨줄 때
+  - 요청/응답 객체를 그대로 넘겨야할 때
+- HttpServletResponse.sendRedirect()
+  - 다른 서버, 다른 웹 어플리케이션으로 이동할 대
+  - POST -> GET 으로 바꿔서 새로고침 시 중복 요청 방지할 때
+  - URL 이 바뀌어야하는 경우(로그인 후 /index으로 이동 등)
 
 7. DefaultServlet은 무엇인가?
 - 정적 리소스 제공 담당(.html, .css, .js, .png 등)
