@@ -7,6 +7,7 @@ import model.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import util.HttpRequestUtils;
+import util.HttpSession;
 
 import java.util.Map;
 
@@ -21,20 +22,19 @@ public class LoginController extends AbstractController {
 
         if(user == null){
             log.warn("User not found : {}", bodyToken.get("userId"));
-            response.addHeader("Set-Cookie", "logined=failed; Path=/");
             response.sendRedirect("/user/login_failed.html");
-            //response.response302Header("/user/login_failed.html", "logined=failed; Path=/");
         }else {
             if (user.comparePassword(bodyToken.get("password"))) {
                 log.debug("Login Success : {}", user.getUserId());
                 response.addHeader("Set-Cookie", "logined=true; Path=/");
+
+                HttpSession session = request.getSession();
+                session.setAttribute("user", user);
+
                 response.sendRedirect("/index.html");
-                //response.response302Header("/index.html", "logined=true; Path=/");
             } else {
                 log.debug("Login Failed : {}", user.getUserId());
-                response.addHeader("Set-Cookie", "logined=failed; Path=/");
                 response.sendRedirect("/user/login_failed.html");
-                //response.response302Header("/user/login_failed.html", "logined=failed; Path=/");
             }
         }
     }

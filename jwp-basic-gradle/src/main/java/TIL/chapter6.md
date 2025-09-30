@@ -1,3 +1,5 @@
+### 6.1 서블릿/JSP로 회원관리 기능 다시 개발하기
+
 ```java
 req.setAttribute("users", DataBase.findAll());
 ```
@@ -80,3 +82,10 @@ public class HomeServlet extends HttpServlet {
 - 정적 리소스 제공 담당(.html, .css, .js, .png 등)
 - 매핑되지 않은 요청 처리
   - @WebServlet에 없는 URI가 들어오면 마지막이로 이 서블릿이 처리 시도, 경로에 파일이 없으면 404 반환
+
+### 6.2 세션(HttpSession) 요구사항 및 실습
+- `String getId()`: 현재 세션에 할당되어 있는 고유한 세션 아이디를 반환
+- `void setAttribute(String name, Object value)`: 현재 세션에 value 인자로 전달되는 객체를 name 인자로 저장
+- `Object getAttribute(String name)`: 현재 세션에 name 인자로 저장되어 있는 객체 값을 찾아 반환
+- `void removeAttribute(String name)`: 현재 세션에 name 인자로 저장되어 있는 객체 값을 제거
+- `void invalidate()`: 현재 세션에 저장되어 있는 모든 값을 삭제

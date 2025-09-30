@@ -2,6 +2,8 @@ package http;
 
 import lombok.extern.slf4j.Slf4j;
 import util.HttpRequestUtils;
+import util.HttpSession;
+import util.HttpSessions;
 import util.IOUtils;
 
 import java.io.BufferedReader;
@@ -61,5 +63,13 @@ public class HttpRequest {
 
     public String getParam(String key) {
         return params.get(key);
+    }
+
+    public HttpCookie getCookie() {
+        return new HttpCookie(getHeader("Cookie"));
+    }
+
+    public HttpSession getSession() {
+        return HttpSessions.getSession(getCookie().getCookie("JSESSIONID"));
     }
 }
