@@ -89,3 +89,7 @@ public class HomeServlet extends HttpServlet {
 - `Object getAttribute(String name)`: 현재 세션에 name 인자로 저장되어 있는 객체 값을 찾아 반환
 - `void removeAttribute(String name)`: 현재 세션에 name 인자로 저장되어 있는 객체 값을 제거
 - `void invalidate()`: 현재 세션에 저장되어 있는 모든 값을 삭제
+
+### 할 거 
+- 로그인 실패 시
+- updateForm 만들기 -> set("user") 해서 해당 user 정보 가져오기
