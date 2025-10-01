@@ -5,6 +5,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import util.HttpRequestUtils;
 import util.IOUtils;
+import http.RequestLine;
 
 import java.io.*;
 import java.net.Socket;
@@ -12,6 +13,7 @@ import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.HashMap;
 import java.util.Map;
 
 public class RequestHandler extends Thread {
@@ -29,83 +31,48 @@ public class RequestHandler extends Thread {
 
         try (InputStream in = connection.getInputStream(); OutputStream out = connection.getOutputStream()) {
             BufferedReader br = new BufferedReader(new InputStreamReader(in));
+            String line = br.readLine();
+            if (line == null || line.trim().isEmpty()) { return; }
 
-            String requestLine = br.readLine();
-            if (requestLine == null || requestLine.trim().isEmpty()) { return; }
+            RequestLine requestLine = new RequestLine(line);
 
-            // Request URL
-            String[] tokens = requestLine.split(" ");
-            String httpMethod = tokens[0];
-            String url = tokens[1];
-            String protocol = tokens[2];
-            String path;
-            String params = "";
-            char seperator = '?';
-            int seperatorIndex = url.indexOf(seperator);
-            if (seperatorIndex != -1) {
-                path = url.substring(0, seperatorIndex);
-                params = url.substring(seperatorIndex + 1);
-            } else {
-                path = url;
-            }
+            String url = requestLine.getUrl();
+            String httpMethod = requestLine.getHttpMethod();
+            String path = requestLine.getPath();
+            String queryString =requestLine.getqueryString();
 
             // Header
-            int contentLength = 0;
-            while (requestLine != null && !requestLine.trim().isEmpty()) {
-                log.info("Header: {}", requestLine);
-                if (requestLine.startsWith("Content-Length:")) {
-                    contentLength = Integer.parseInt(requestLine.split(":")[1].trim());
+            Map<String, String> headers = new HashMap<>();
+            while (!line.trim().isEmpty()) {
+                log.info("header: {}", line);
+                line = br.readLine();
+                String[] headerTokens = line.split(":\\s*");
+                if (headerTokens.length == 2) {
+                    headers.put(headerTokens[0], headerTokens[1]);
                 }
-                requestLine = br.readLine();
             }
 
-            if (httpMethod.equals("GET")) {
-                if (!params.isEmpty()) {
-                    Map<String, String> queryParams = HttpRequestUtils.parseQueryString(params);
+            if (url.startsWith("/user/create")) {
+                String requestBody = IOUtils.readData(br, Integer.parseInt(headers.get("Content-Length")));
+                Map<String, String> params = HttpRequestUtils.parseQueryString(requestBody);
 
-                    String userId = URLDecoder.decode(queryParams.get("userId"), StandardCharsets.UTF_8);
-                    String password = URLDecoder.decode(queryParams.get("password"), StandardCharsets.UTF_8);
-                    String name = URLDecoder.decode(queryParams.get("name"), StandardCharsets.UTF_8);
-                    String email = URLDecoder.decode(queryParams.get("email"), StandardCharsets.UTF_8);
+                String userId = URLDecoder.decode(params.get("userId"), StandardCharsets.UTF_8);
+                String password = URLDecoder.decode(params.get("password"), StandardCharsets.UTF_8);
+                String name = URLDecoder.decode(params.get("name"), StandardCharsets.UTF_8);
+                String email = URLDecoder.decode(params.get("email"), StandardCharsets.UTF_8);
 
-                    User user = new User(userId, password, name, email);
-                }
+                User user = new User(userId, password, name, email);
+                path = "/index.html";
+            } else {
                 DataOutputStream dos = new DataOutputStream(out);
-                byte[] body = Files.readAllBytes(Paths.get("./webapp" + url));
-
+                byte[] body = Files.readAllBytes(Paths.get("./webapp" + path));
                 response200Header(dos, body.length);
                 responseBody(dos, body);
             }
-
-            if (httpMethod.equals("POST")) {
-
-                if (contentLength > 0) {
-                    String bodyContent = IOUtils.readData(br, contentLength);
-                    log.info("body: {}", bodyContent);
-
-                    Map<String, String> queryParams = HttpRequestUtils.parseQueryString(bodyContent);
-
-                    String userId = URLDecoder.decode(queryParams.get("userId"), StandardCharsets.UTF_8);
-                    String password = URLDecoder.decode(queryParams.get("password"), StandardCharsets.UTF_8);
-                    String name = URLDecoder.decode(queryParams.get("name"), StandardCharsets.UTF_8);
-                    String email = URLDecoder.decode(queryParams.get("email"), StandardCharsets.UTF_8);
-
-                    User user = new User(userId, password, name, email);
-                    log.info("User details - ID: {}, Name: {}, Email: {}", userId, name, email);
-
-                    try {
-                        // TODO
-                        //  1. 데이터 검증
-                        //  2. DB 저장
-
-                        DataOutputStream dos = new DataOutputStream(out);
-                        response302Header(dos, "/index.html");
-                        log.info("success your sign up");
-                    } catch (Exception e) {
-                        log.error("User registration failed", e);
-                    }
-                }
-            }
+            DataOutputStream dos = new DataOutputStream(out);
+            byte[] body = Files.readAllBytes(Paths.get("./webapp" + path));
+            response302Header(dos, "/index.html");
+            responseBody(dos, body);
 
         } catch (IOException e) {
             log.error(e.getMessage());
