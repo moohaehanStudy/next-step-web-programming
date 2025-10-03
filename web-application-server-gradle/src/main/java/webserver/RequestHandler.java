@@ -93,12 +93,13 @@ public class RequestHandler extends Thread {
                 String cookie = headers.get("Cookie");
                 if (cookie != null) {
                     if (Boolean.parseBoolean(HttpRequestUtils.parseCookies(cookie).get("logined"))) {
-                        // users 목록을 동적으로 전달
-                        Collection<User> users = DataBase.findAll();
+
+                        // TODO: users 목록을 동적으로 전달
+//                        Collection<User> users = DataBase.findAll();
 
                         DataOutputStream dos = new DataOutputStream(out);
                         byte[] body = Files.readAllBytes(Paths.get("./webapp" + path));
-                        response200Header(dos, body.length);
+                        response200Header(dos, body.length, path);
                         responseBody(dos, body);
                     } else {
                         DataOutputStream dos = new DataOutputStream(out);
@@ -111,7 +112,7 @@ public class RequestHandler extends Thread {
             } else {
                 DataOutputStream dos = new DataOutputStream(out);
                 byte[] body = Files.readAllBytes(Paths.get("./webapp" + path));
-                response200Header(dos, body.length);
+                response200Header(dos, body.length, path);
                 responseBody(dos, body);
             }
         } catch (IOException e) {
@@ -119,10 +120,12 @@ public class RequestHandler extends Thread {
         }
     }
 
-    private void response200Header(DataOutputStream dos, int lengthOfBodyContent) {
+    private void response200Header(DataOutputStream dos, int lengthOfBodyContent, String path) {
         try {
+            String contentType = getContentType(path);
+
             dos.writeBytes("HTTP/1.1 200 OK \r\n");
-            dos.writeBytes("Content-Type: text/html;charset=utf-8\r\n");
+            dos.writeBytes("Content-Type: " + contentType + "\r\n");
             dos.writeBytes("Content-Length: " + lengthOfBodyContent + "\r\n");
             dos.writeBytes("\r\n");
         } catch (IOException e) {
@@ -158,6 +161,16 @@ public class RequestHandler extends Thread {
             dos.flush();
         } catch (IOException e) {
             log.error(e.getMessage());
+        }
+    }
+
+    private String getContentType(String path) {
+        if (path.endsWith(".html")) {
+            return "text/html;charset=utf-8";
+        } else if (path.endsWith(".css")) {
+            return "text/css;charset=utf-8";
+        } else {
+            return "text/plain;charset=utf-8";
         }
     }
 }
