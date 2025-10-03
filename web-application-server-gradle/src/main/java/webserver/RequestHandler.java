@@ -1,5 +1,6 @@
 package webserver;
 
+import db.DataBase;
 import model.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,8 +45,8 @@ public class RequestHandler extends Thread {
             // Header
             Map<String, String> headers = new HashMap<>();
             while (!line.trim().isEmpty()) {
-                log.info("header: {}", line);
                 line = br.readLine();
+                log.info("header: {}", line);
                 String[] headerTokens = line.split(":\\s*");
                 if (headerTokens.length == 2) {
                     headers.put(headerTokens[0], headerTokens[1]);
@@ -62,18 +63,37 @@ public class RequestHandler extends Thread {
                 String email = URLDecoder.decode(params.get("email"), StandardCharsets.UTF_8);
 
                 User user = new User(userId, password, name, email);
+                DataBase.addUser(user);
                 path = "/index.html";
+
+                DataOutputStream dos = new DataOutputStream(out);
+                response302Header(dos, "/index.html");
+            } else if (url.equals("/user/login")) {
+                String requestBody = IOUtils.readData(br, Integer.parseInt(headers.get("Content-Length")));
+                log.info("Request body: {}", requestBody);
+                Map<String, String> params = HttpRequestUtils.parseQueryString(requestBody);
+                log.info("userId: {}, password: {}", params.get("userId"), params.get("password"));
+
+                User user = DataBase.findUserById(params.get("userId"));
+                if (user == null) {
+                    log.debug("User Not Found");
+                    DataOutputStream dos = new DataOutputStream(out);
+                    response302Header(dos, "/user/login_failed.html", "logined=false");
+                } else if (user.getPassword().equals(params.get("password"))) {
+                    log.debug("login success!");
+                    DataOutputStream dos = new DataOutputStream(out);
+                    response302Header(dos, "/index.html", "logined=true");
+                } else {
+                    log.debug("Password Mismatch");
+                    DataOutputStream dos = new DataOutputStream(out);
+                    response302Header(dos, "/user/login_failed.html", "logined=false");
+                }
             } else {
                 DataOutputStream dos = new DataOutputStream(out);
                 byte[] body = Files.readAllBytes(Paths.get("./webapp" + path));
                 response200Header(dos, body.length);
                 responseBody(dos, body);
             }
-            DataOutputStream dos = new DataOutputStream(out);
-            byte[] body = Files.readAllBytes(Paths.get("./webapp" + path));
-            response302Header(dos, "/index.html");
-            responseBody(dos, body);
-
         } catch (IOException e) {
             log.error(e.getMessage());
         }
@@ -98,6 +118,17 @@ public class RequestHandler extends Thread {
             dos.writeBytes("\r\n");
         } catch (Exception e) {
             log.error("Failed to send 302 redirect: " + e.getMessage());
+        }
+    }
+
+    private void response302Header(DataOutputStream dos,  String redirectUrl, String cookie) {
+        try {
+            dos.writeBytes("HTTP/1.1 302 Found\r\n");
+            dos.writeBytes("Location: " + redirectUrl + "\r\n");
+            dos.writeBytes("Set-Cookie: " + cookie + "\r\n");
+            dos.writeBytes("\r\n");
+        } catch (IOException e) {
+            log.error(e.getMessage());
         }
     }
 
