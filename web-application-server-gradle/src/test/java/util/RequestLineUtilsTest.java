@@ -7,7 +7,7 @@ import java.util.Map;
 import org.junit.jupiter.api.Test;
 import util.HttpRequestUtils.Pair;
 
-public class HttpRequestUtilsTest {
+public class RequestLineUtilsTest {
     @Test
     public void parseQueryString() {
         String queryString = "userId=javajigi";
