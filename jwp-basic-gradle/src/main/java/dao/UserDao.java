@@ -1,6 +1,8 @@
 package dao;
 
 import jdbc.ConnectionManager;
+import jdbc.InsertJdbcTemplate;
+import jdbc.UpdateJdbcTemplate;
 import model.User;
 
 import java.sql.Connection;
@@ -12,24 +14,13 @@ import java.util.List;
 
 public class UserDao {
     public void insert(User user) throws SQLException {
-        Connection con = null;
-        PreparedStatement ps = null;
-
-        try{
-            con = ConnectionManager.getConnection();
-            String sql = "INSERT INTO USERS VALUES (?, ?, ?, ?)";
-            ps = con.prepareStatement(sql);
-            ps.setString(1, user.getUserId());
-            ps.setString(2, user.getPassword());
-            ps.setString(3, user.getName());
-            ps.setString(4, user.getEmail());
-
-            ps.executeUpdate();
-        } finally{
-            if(ps != null) ps.close();
-            if(con != null) con.close();
-        }
+        new InsertJdbcTemplate().insert(user);
     }
+
+    public void update(User user) throws SQLException {
+        new UpdateJdbcTemplate().update(user);
+    }
+
 
     public User findByUserId(String userId) throws SQLException {
         Connection con = null;
@@ -88,27 +79,6 @@ public class UserDao {
             return users;
         } finally {
             if(rs != null) rs.close();
-            if(ps != null) ps.close();
-            if(con != null) con.close();
-        }
-    }
-
-    public void update(User user) throws SQLException {
-        Connection con = null;
-        PreparedStatement ps = null;
-
-        try{
-            con = ConnectionManager.getConnection();
-            String sql = "UPDATE USERS SET password = ?, name = ?, email = ? WHERE userId = ?";
-
-            ps = con.prepareStatement(sql);
-            ps.setString(1, user.getPassword());
-            ps.setString(2, user.getName());
-            ps.setString(3, user.getEmail());
-            ps.setString(4, user.getUserId());
-
-            ps.executeUpdate();
-        } finally{
             if(ps != null) ps.close();
             if(con != null) con.close();
         }
