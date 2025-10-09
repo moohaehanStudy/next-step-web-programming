@@ -1,9 +1,8 @@
 package dao;
 
 import jdbc.ConnectionManager;
-import jdbc.InsertJdbcTemplate;
-import jdbc.UpdateJdbcTemplate;
 import model.User;
+import sun.jvm.hotspot.code.Stub;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -14,11 +13,35 @@ import java.util.List;
 
 public class UserDao {
     public void insert(User user) throws SQLException {
-        new InsertJdbcTemplate().insert(user);
+        JdbcTemplate jdbcTemplate = new JdbcTemplate() {
+            void setValues(User user, PreparedStatement ps) throws SQLException{
+                ps.setString(1, user.getUserId());
+                ps.setString(2, user.getPassword());
+                ps.setString(3, user.getName());
+                ps.setString(4, user.getEmail());
+            }
+            String createQuery(){
+                return "INSERT INTO USERS VALUES (?, ?, ?, ?)";
+
+            }
+        };
+        jdbcTemplate.update(user);
     }
 
     public void update(User user) throws SQLException {
-        new UpdateJdbcTemplate().update(user);
+        JdbcTemplate jdbcTemplate = new JdbcTemplate() {
+            void setValues(User user, PreparedStatement ps) throws SQLException{
+                ps.setString(1, user.getPassword());
+                ps.setString(2, user.getName());
+                ps.setString(3, user.getEmail());
+                ps.setString(4, user.getUserId());
+            }
+
+            String createQuery(){
+                return "UPDATE USERS SET password = ?, name = ?, email = ? WHERE userId = ?";
+            }
+        };
+        jdbcTemplate.update(user);
     }
 
 
