@@ -11,3 +11,4 @@ CREATE TABLE USERS
 );
 
 INSERT INTO USERS VALUES('soyun', '1234', 'soyun', 'test@test.com');
+INSERT INTO USERS VALUES('soyun2', '12341234', 'soyun2', 'test2@test2.com');

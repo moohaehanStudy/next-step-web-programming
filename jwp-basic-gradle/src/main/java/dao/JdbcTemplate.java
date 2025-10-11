@@ -1,22 +1,22 @@
 package dao;
 
 import jdbc.ConnectionManager;
-import model.User;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.List;
 
 public abstract class JdbcTemplate {
-    public void update(User user) throws SQLException {
+    public void update(String sql) throws SQLException {
         Connection con = null;
         PreparedStatement ps = null;
 
         try{
             con = ConnectionManager.getConnection();
-            String sql = createQuery();
             ps = con.prepareStatement(sql);
-            setValues(user, ps);
+            setValues(ps);
 
             ps.executeUpdate();
         } finally{
@@ -25,9 +25,15 @@ public abstract class JdbcTemplate {
         }
     }
 
-    abstract void setValues(User user, PreparedStatement ps) throws SQLException;
+    public List query(String sql) {
 
-    abstract String createQuery();
+    }
 
+    public Object queryForObject(String sql){
 
+    }
+
+    abstract void setValues(PreparedStatement ps) throws SQLException;
+
+    abstract Object mapRow(ResultSet rs) throws SQLException;
 }

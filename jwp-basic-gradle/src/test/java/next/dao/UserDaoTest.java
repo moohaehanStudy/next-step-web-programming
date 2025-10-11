@@ -39,7 +39,14 @@ public class UserDaoTest {
     public void findAll() throws Exception {
         UserDao userDao = new UserDao();
         List<User> users = userDao.findAll();
-        assertEquals(1, users.size());
+        assertEquals(2, users.size());
     }
 
+    @Test
+    public void findById() throws Exception {
+        UserDao userDao = new UserDao();
+        User user = userDao.findByUserId("soyun");
+
+        assertEquals("1234", user.getPassword());
+    }
 }
