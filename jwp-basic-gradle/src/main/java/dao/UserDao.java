@@ -26,7 +26,9 @@ public class UserDao {
                 ps.setString(4, user.getEmail());
             }
 
-            void mapRow(ResultSet rs) throws SQLException {}
+            Object mapRow(ResultSet rs) throws SQLException {
+                return null;
+            }
         };
         jdbcTemplate.update(INSERTQUERY);
     }
@@ -40,7 +42,9 @@ public class UserDao {
                 ps.setString(4, user.getUserId());
             }
 
-            void mapRow(ResultSet rs) throws SQLException {}
+            Object mapRow(ResultSet rs) throws SQLException {
+                return null;
+            }
         };
         jdbcTemplate.update(UPDATEQUERY);
     }
