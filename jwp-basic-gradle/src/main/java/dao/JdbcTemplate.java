@@ -21,18 +21,18 @@ public class JdbcTemplate{
         }
     }
 
-    public void update(String sql, Object... values) throws SQLException {
-        PreparedStatementSetter pss = createPreparedStatementSetter(values);
-        update(sql, pss);
-    }
+//    public void update(String sql, Object... values) throws SQLException {
+//        PreparedStatementSetter pss = createPreparedStatementSetter(values);
+//        update(sql, pss);
+//    }
 
-    public PreparedStatementSetter createPreparedStatementSetter(Object... values){
-        return ps -> {
-            for(int i = 0; i < values.length; i++){
-                ps.setObject(i + 1, values[i]);
-            }
-        };
-    }
+//    public PreparedStatementSetter createPreparedStatementSetter(Object... values){
+//        return ps -> {
+//            for(int i = 0; i < values.length; i++){
+//                ps.setObject(i + 1, values[i]);
+//            }
+//        };
+//    }
 
     public <T> List<T> query(String sql, PreparedStatementSetter pss, RowMapper<T> rm) throws SQLException {
         try (Connection con = ConnectionManager.getConnection();
@@ -51,11 +51,11 @@ public class JdbcTemplate{
         }
     }
 
-    public <T> List<T> query(String sql, RowMapper<T> rm, Object... values) throws SQLException {
-        PreparedStatementSetter pss = createPreparedStatementSetter(values);
-
-        return query(sql, pss, rm);
-    }
+//    public <T> List<T> query(String sql, RowMapper<T> rm, Object... values) throws SQLException {
+//        PreparedStatementSetter pss = createPreparedStatementSetter(values);
+//
+//        return query(sql, pss, rm);
+//    }
 
     public <T> T queryForObject(String sql, PreparedStatementSetter pss, RowMapper<T> rm) throws SQLException {
         List<T> lists = query(sql, pss, rm);
@@ -67,8 +67,8 @@ public class JdbcTemplate{
         return lists.get(0);
     }
 
-    public <T> T queryForObject(String sql, RowMapper<T> rm, Object... values) throws SQLException {
-        PreparedStatementSetter pss = createPreparedStatementSetter(values);
-        return queryForObject(sql, pss, rm);
-    }
+//    public <T> T queryForObject(String sql, RowMapper<T> rm, Object... values) throws SQLException {
+//        PreparedStatementSetter pss = createPreparedStatementSetter(values);
+//        return queryForObject(sql, pss, rm);
+//    }
 }

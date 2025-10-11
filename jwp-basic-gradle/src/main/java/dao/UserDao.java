@@ -2,6 +2,7 @@ package dao;
 
 import model.User;
 
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
@@ -19,28 +20,45 @@ public class UserDao {
     public void insert(User user) throws SQLException {
         JdbcTemplate jdbcTemplate = new JdbcTemplate();
 
-        jdbcTemplate.update(INSERTQUERY, user.getUserId(), user.getPassword(), user.getName(), user.getEmail());
+        PreparedStatementSetter pss = new PreparedStatementSetter() {
+            public void setValues(PreparedStatement ps) throws SQLException {
+                ps.setString(1, user.getUserId());
+                ps.setString(2, user.getPassword());
+                ps.setString(3, user.getName());
+                ps.setString(4, user.getEmail());
+            }
+        };
+
+        jdbcTemplate.update(INSERTQUERY, pss);
     }
 
     public void update(User user) throws SQLException {
         JdbcTemplate jdbcTemplate = new JdbcTemplate();
 
-        jdbcTemplate.update(UPDATEQUERY, user.getPassword(), user.getName(), user.getEmail(), user.getUserId());
+        PreparedStatementSetter pss = new PreparedStatementSetter() {
+            public void setValues(PreparedStatement ps) throws SQLException {
+                ps.setString(1, user.getPassword());
+                ps.setString(2, user.getName());
+                ps.setString(3, user.getEmail());
+                ps.setString(4, user.getUserId());
+            }
+        };
+
+        jdbcTemplate.update(UPDATEQUERY, pss);
     }
 
     public User findByUserId(String userId) throws SQLException {
         JdbcTemplate jdbcTemplate = new JdbcTemplate();
 
-//        PreparedStatementSetter pss = new PreparedStatementSetter() {
-//            public void setValues(PreparedStatement ps) throws SQLException {
-//                ps.setString(1, userId);
-//            }
-//        };
+        PreparedStatementSetter pss = new PreparedStatementSetter() {
+            public void setValues(PreparedStatement ps) throws SQLException {
+                ps.setString(1, userId);
+            }
+        };
 
         RowMapper<User> rm = createRowMapper();
 
-        //return jdbcTemplate.queryForObject(SELECTONEQUERY, pss, rm);
-        return jdbcTemplate.queryForObject(SELECTONEQUERY, rm, userId);
+        return jdbcTemplate.queryForObject(SELECTONEQUERY, pss, rm);
     }
 
     private RowMapper<User> createRowMapper() {
@@ -70,11 +88,10 @@ public class UserDao {
         JdbcTemplate jdbcTemplate = new JdbcTemplate();
 
         // 람다식으로 변환
-        //PreparedStatementSetter pss = ps -> {};
+        PreparedStatementSetter pss = ps -> {};
 
         RowMapper<User> rm = createRowMapper();
 
-        return jdbcTemplate.query(SELECTALLQUERY, rm);
-        //return jdbcTemplate.query(SELECTALLQUERY, pss, rm);
+        return jdbcTemplate.query(SELECTALLQUERY, pss, rm);
     }
 }
