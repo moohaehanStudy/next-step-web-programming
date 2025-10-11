@@ -1,5 +1,6 @@
 package dao;
 
+import exception.CustomException;
 import jdbc.ConnectionManager;
 
 import java.sql.Connection;
@@ -9,49 +10,36 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-public abstract class JdbcTemplate {
-    public void update(String sql) throws SQLException {
-        Connection con = null;
-        PreparedStatement ps = null;
-
-        try{
-            con = ConnectionManager.getConnection();
-            ps = con.prepareStatement(sql);
-            setValues(ps);
-
-            ps.executeUpdate();
-        } finally{
-            if(ps != null) ps.close();
-            if(con != null) con.close();
+public class JdbcTemplate{
+    public void update(String sql, PreparedStatementSetter pss) throws SQLException {
+        try(Connection con = ConnectionManager.getConnection();
+        PreparedStatement ps = con.prepareStatement(sql)){
+         pss.setValues(ps);
+         ps.executeUpdate();
+        } catch(SQLException e){
+            throw new CustomException("DB 업데이트 중 문제가 발생했습니다.");
         }
     }
 
-    public List query(String sql) throws SQLException {
-        Connection con = null;
-        PreparedStatement ps = null;
-        ResultSet rs = null;
+    public <T> List<T> query(String sql, PreparedStatementSetter pss, RowMapper<T> rm) throws SQLException {
+        try(Connection con = ConnectionManager.getConnection();
+        PreparedStatement ps = con.prepareStatement(sql);
+        ResultSet rs = ps.executeQuery()){
+            pss.setValues(ps);
 
-        try {
-            con = ConnectionManager.getConnection();
-            ps = con.prepareStatement(sql);
-            setValues(ps);
-            rs = ps.executeQuery();
-
-            List<Object> list = new ArrayList<>();
+            List<T> list = new ArrayList<>();
             while (rs.next()) {
-                list.add(this.mapRow(rs));
+                list.add(rm.mapRow(rs));
             }
 
             return list;
-        } finally {
-            if (rs != null) rs.close();
-            if (ps != null) ps.close();
-            if (con != null) con.close();
+        } catch(SQLException e){
+            throw new CustomException("DB에서 값을 가져오는 중 문제가 발생했습니다.");
         }
     }
 
-    public Object queryForObject(String sql) throws SQLException {
-        List lists = query(sql);
+    public <T> T queryForObject(String sql, PreparedStatementSetter pss, RowMapper<T> rm) throws SQLException {
+        List<T> lists = query(sql, pss, rm);
 
         if(lists.isEmpty()){
             return null;
@@ -59,8 +47,4 @@ public abstract class JdbcTemplate {
 
         return lists.get(0);
     }
-
-    abstract void setValues(PreparedStatement ps) throws SQLException;
-
-    abstract Object mapRow(ResultSet rs) throws SQLException;
 }

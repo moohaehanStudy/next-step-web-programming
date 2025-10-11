@@ -18,44 +18,46 @@ public class UserDao {
     private static final String SELECTALLQUERY = "SELECT userId, password, name, email FROM USERS";
 
     public void insert(User user) throws SQLException {
-        JdbcTemplate jdbcTemplate = new JdbcTemplate() {
-            void setValues(PreparedStatement ps) throws SQLException{
+        JdbcTemplate jdbcTemplate = new JdbcTemplate();
+
+        PreparedStatementSetter pss = new PreparedStatementSetter() {
+            public void setValues(PreparedStatement ps) throws SQLException{
                 ps.setString(1, user.getUserId());
                 ps.setString(2, user.getPassword());
                 ps.setString(3, user.getName());
                 ps.setString(4, user.getEmail());
             }
-
-            Object mapRow(ResultSet rs) throws SQLException {
-                return null;
-            }
         };
-        jdbcTemplate.update(INSERTQUERY);
+
+        jdbcTemplate.update(INSERTQUERY, pss);
     }
 
     public void update(User user) throws SQLException {
-        JdbcTemplate jdbcTemplate = new JdbcTemplate() {
-            void setValues(PreparedStatement ps) throws SQLException{
+        JdbcTemplate jdbcTemplate = new JdbcTemplate();
+
+        PreparedStatementSetter pss = new PreparedStatementSetter() {
+            public void setValues(PreparedStatement ps) throws SQLException{
                 ps.setString(1, user.getPassword());
                 ps.setString(2, user.getName());
                 ps.setString(3, user.getEmail());
                 ps.setString(4, user.getUserId());
             }
-
-            Object mapRow(ResultSet rs) throws SQLException {
-                return null;
-            }
         };
-        jdbcTemplate.update(UPDATEQUERY);
+
+        jdbcTemplate.update(UPDATEQUERY, pss);
     }
 
     public User findByUserId(String userId) throws SQLException {
-        JdbcTemplate selectJdbcTemplate = new JdbcTemplate() {
-            void setValues(PreparedStatement ps) throws SQLException{
+        JdbcTemplate selectJdbcTemplate = new JdbcTemplate();
+
+        PreparedStatementSetter pss = new PreparedStatementSetter() {
+            public void setValues(PreparedStatement ps) throws SQLException {
                 ps.setString(1, userId);
             }
+        };
 
-            Object mapRow(ResultSet rs) throws SQLException {
+        RowMapper<User> rm = new RowMapper<User>(){
+            public User mapRow(ResultSet rs) throws SQLException {
                 return new User(
                         rs.getString(USERID),
                         rs.getString(PASSWORD),
@@ -65,14 +67,22 @@ public class UserDao {
             }
         };
 
-        return (User)selectJdbcTemplate.queryForObject(SELECTONEQUERY);
+        return selectJdbcTemplate.queryForObject(SELECTONEQUERY, pss, rm);
     }
 
     public List<User> findAll() throws SQLException {
-        JdbcTemplate selectJdbcTemplate = new JdbcTemplate() {
-            void setValues(PreparedStatement ps) throws SQLException {}
+        JdbcTemplate selectJdbcTemplate = new JdbcTemplate();
 
-            Object mapRow(ResultSet rs) throws SQLException {
+        PreparedStatementSetter pss = new PreparedStatementSetter() {
+            public void setValues(PreparedStatement ps) throws SQLException {}
+        };
+
+        /* 람다식으로 변환
+        PreparedStatementSetter pss = ps -> {};
+        */
+
+        RowMapper<User> rm = new RowMapper<User>(){
+            public User mapRow(ResultSet rs) throws SQLException {
                 return new User(
                         rs.getString(USERID),
                         rs.getString(PASSWORD),
@@ -81,6 +91,15 @@ public class UserDao {
                 );
             }
         };
-        return (List<User>) selectJdbcTemplate.query(SELECTALLQUERY);
+
+        /* 람다식으로 변환 시
+        RowMapper<User> rm = rs -> new User(
+                rs.getString(USERID),
+                rs.getString(PASSWORD),
+                rs.getString(NAME),
+                rs.getString(EMAIL)
+        );
+        */
+        return selectJdbcTemplate.query(SELECTALLQUERY, pss, rm);
     }
 }
