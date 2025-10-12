@@ -30,7 +30,7 @@ public class RequestHandler extends Thread {
             HttpResponse response = new HttpResponse(out);
 
             if(request.getSession() == null){
-                response.addHeader("Cookie","JSESSIONID=" + UUID.randomUUID());
+                response.addHeader("Set-Cookie","JSESSIONID=" + UUID.randomUUID() + "; Path=/");
             }
 
             String requestPath = getDefaultUrl(request.getUrl());
