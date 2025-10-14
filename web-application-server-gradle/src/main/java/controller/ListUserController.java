@@ -7,6 +7,7 @@ import model.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import util.HttpRequestUtils;
+import util.HttpSession;
 
 import java.util.Collection;
 import java.util.Map;
@@ -23,7 +24,7 @@ public class ListUserController extends AbstractController {
 
         StringBuilder sb = new StringBuilder();
 
-        if (headerToken.containsKey("logined") && headerToken.get("logined").equals("true")) {
+        if (isLogined(request.getSession())) {
             Collection<User> users = DataBase.findAll();
 
             sb.append("<html>");
@@ -47,12 +48,17 @@ public class ListUserController extends AbstractController {
 
             response.response200Header(sb.length(), url);
             response.responseBody(sb.toString().getBytes());
-        }else if(!headerToken.containsKey("logined") || headerToken.get("logined").equals("failed")) {
-            response.addHeader("Set-Cookie", "logined=failed");
+        }else if(!isLogined(request.getSession())) {
             response.sendRedirect("/user/login.html");
         } else{
             log.error("지정되지 않은 쿠키 값: {}", headerToken.get("logined"));
             response.sendRedirect("/user/login.html");
         }
+    }
+
+    private static boolean isLogined(HttpSession session) {
+        Object user = session.getAttribute("user");
+
+        return user != null;
     }
 }
