@@ -7,7 +7,7 @@ import java.io.IOException;
 
 public class HomeController implements Controller {
     @Override
-    public String execute(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+    public String execute(HttpServletRequest req, HttpServletResponse resp) throws Exception {
         return "/index.jsp";
     }
 }

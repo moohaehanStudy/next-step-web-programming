@@ -16,6 +16,7 @@ public class RequestMapping {
         controllers.put("/user/logout", new LogoutUserController());
         controllers.put("/user/update", new UpdateUserController());
         controllers.put("/user/updateForm", new ForwardController("/user/updateForm.jsp"));
+        controllers.put("/api/qna/addAnswer", new AddAnswerController());
     }
 
     public Controller getController(String url){

@@ -10,7 +10,7 @@ import java.io.IOException;
 
 public class LogoutUserController implements Controller {
     @Override
-    public String execute(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+    public String execute(HttpServletRequest req, HttpServletResponse resp) throws Exception {
         if(SessionUserUtils.isLoggedIn(req.getSession())){
             HttpSession session = req.getSession();
             session.removeAttribute("user");

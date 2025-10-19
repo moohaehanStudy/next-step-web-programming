@@ -16,19 +16,12 @@ public class LoginUserController implements Controller {
     private static final Logger log = LoggerFactory.getLogger(LoginUserController.class);
 
     @Override
-    public String execute(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+    public String execute(HttpServletRequest req, HttpServletResponse resp) throws Exception {
         String userId = req.getParameter("userId");
         String password = req.getParameter("password");
         
         UserDao userDao = new UserDao();
-        User user = null;
-        
-        try {
-            user = userDao.findByUserId(userId);
-        } catch (SQLException e) {
-            log.error("사용자 조회 중 오류 발생: {}", e.getMessage());
-            return "redirect:/user/login_failed.jsp";
-        }
+        User user = userDao.findByUserId(userId);
 
         if(user == null){
             return "redirect:/user/login_failed.jsp";

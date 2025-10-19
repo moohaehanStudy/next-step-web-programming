@@ -35,14 +35,20 @@ public class DispatcherServlet extends HttpServlet {
         log.debug("요청URI는: {}", req.getRequestURI());
 
         Controller controller = findController(req.getRequestURI());
-        String value = controller.execute(req, res);
-
-        if(value.startsWith(REDIRECT)){
-            String path = value.substring(REDIRECT.length());
-            res.sendRedirect(path);
-        } else{
-            RequestDispatcher dispatcher = req.getRequestDispatcher(value);
-            dispatcher.forward(req, res);
+        try {
+            String value = controller.execute(req, res);
+            if(value != null){
+                if (value.startsWith(REDIRECT)) {
+                    String path = value.substring(REDIRECT.length());
+                    res.sendRedirect(path);
+                } else {
+                    RequestDispatcher dispatcher = req.getRequestDispatcher(value);
+                    dispatcher.forward(req, res);
+                }
+            }
+        } catch(Throwable e){
+            log.error(e.getMessage(), e);
+            throw new ServletException(e.getMessage());
         }
     }
 }

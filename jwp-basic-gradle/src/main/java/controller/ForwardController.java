@@ -21,7 +21,7 @@ public class ForwardController implements Controller {
     }
 
     @Override
-    public String execute(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+    public String execute(HttpServletRequest req, HttpServletResponse resp) throws Exception {
 
         if(forwardUrl.equals("/user/updateForm.jsp")) {
             Object user = req.getSession().getAttribute("user");
@@ -29,12 +29,8 @@ public class ForwardController implements Controller {
             if(user != null) {
                 String userId = req.getParameter("userId");
                 UserDao userDao = new UserDao();
-                User currentUser = null;
-                try {
-                    currentUser = userDao.findByUserId(userId);
-                } catch (SQLException e) {
-                    log.error("사용자 조회 중 오류 발생: {}", e.getMessage());
-                }
+                User currentUser = userDao.findByUserId(userId);
+
                 req.setAttribute("user", currentUser);
             }
         }

@@ -15,16 +15,11 @@ public class ListUserController implements Controller {
     private static final Logger log = LoggerFactory.getLogger(ListUserController.class);
 
     @Override
-    public String execute(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+    public String execute(HttpServletRequest req, HttpServletResponse resp) throws Exception {
 
         if(SessionUserUtils.isLoggedIn(req.getSession())) {
             UserDao userDao = new UserDao();
-            try {
-                req.setAttribute("users", userDao.findAll());
-            } catch (SQLException e) {
-                log.error("사용자 목록 조회 중 오류 발생: {}", e.getMessage());
-                req.setAttribute("users", null);
-            }
+            req.setAttribute("users", userDao.findAll());
 
             return "/user/list.jsp";
         } else {

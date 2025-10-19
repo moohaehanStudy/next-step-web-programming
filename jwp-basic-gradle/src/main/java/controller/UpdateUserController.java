@@ -16,7 +16,7 @@ public class UpdateUserController implements Controller {
     private static final Logger log = LoggerFactory.getLogger(UpdateUserController.class);
 
     @Override
-    public String execute(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+    public String execute(HttpServletRequest req, HttpServletResponse resp) throws Exception {
         User value = SessionUserUtils.getUserFromSession(req.getSession());
 
         if(value == null){
@@ -40,13 +40,8 @@ public class UpdateUserController implements Controller {
                         req.getParameter("name"),
                         req.getParameter("email")
                 );
-                
-                try {
-                    userDao.update(updatedUser);
-                } catch (SQLException e) {
-                    log.error("사용자 업데이트 중 오류 발생: {}", e.getMessage());
-                    return "redirect:/user/list";
-                }
+
+                userDao.update(updatedUser);
 
                 return "redirect:/user/list";
             } else{

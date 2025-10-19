@@ -12,3 +12,26 @@ CREATE TABLE USERS
 
 INSERT INTO USERS VALUES('soyun', '1234', 'soyun', 'test@test.com');
 INSERT INTO USERS VALUES('soyun2', '12341234', 'soyun2', 'test2@test2.com');
+
+DROP TABLE IF EXISTS QUESTIONS;
+
+CREATE TABLE QUESTIONS(
+    questionId bigint auto_increment,
+    writer varchar(30) NOT NULL,
+    title varchar(50) NOT NULL,
+    contents varchar(5000) NOT NULL,
+    createdDate timestamp NOT NULL,
+    countOfAnswer int,
+    PRIMARY KEY (questionId)
+);
+
+DROP TABLE IF EXISTS ANSWERS;
+
+CREATE TABLE ANSWERS(
+    answerId bigint auto_increment,
+    writer varchar(30) NOT NULL,
+    contents varchar(5000) NOT NULL,
+    createdDate timestamp NOT NULL,
+    questionId bigint NOT NULL,
+    PRIMARY KEY (answerId)
+);

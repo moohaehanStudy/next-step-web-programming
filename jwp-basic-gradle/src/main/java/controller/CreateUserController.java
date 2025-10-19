@@ -17,7 +17,7 @@ public class CreateUserController implements Controller {
     private static final Logger log = LoggerFactory.getLogger(CreateUserController.class);
 
     @Override
-    public String execute(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+    public String execute(HttpServletRequest req, HttpServletResponse resp) throws Exception {
         User user = new User(
                 req.getParameter("userId"),
                 req.getParameter("password"),
@@ -26,11 +26,8 @@ public class CreateUserController implements Controller {
         );
 
         UserDao userDao = new UserDao();
-        try{
-            userDao.insert(user);
-        } catch(SQLException e){
-            log.error(e.getMessage());
-        }
+        userDao.insert(user);
+
 
         return "redirect:/index.jsp";
     }
