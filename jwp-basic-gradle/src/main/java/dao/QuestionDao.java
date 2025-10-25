@@ -43,12 +43,12 @@ public class QuestionDao {
         };
 
         RowMapper<Question> rm = rs -> new Question(
-                rs.getLong("questionId"),
-                rs.getString("writer"),
-                rs.getString("title"),
-                rs.getString("contents"),
-                rs.getTimestamp("createdDate"),
-                rs.getInt("countOfAnswer")
+                rs.getLong(QUESTIONID),
+                rs.getString(WRITER),
+                rs.getString(TITLE),
+                rs.getString(CONTENTS),
+                rs.getTimestamp(CREATEDDATE),
+                rs.getInt(COUNTOFANSWER)
         );
 
         return jdbcTemplate.queryForObject(SELECTQUERY, pss, rm);
