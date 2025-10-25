@@ -22,7 +22,7 @@ public class UpdateUserController implements Controller {
         if(value == null){
             log.error("로그인 한 회원만 목록을 볼 수 있습니다 -> updateUserServlet");
 
-            return "/index.jsp";
+            return "/home.jsp";
         } else{
             UserDao userDao = new UserDao();
             User user = null;

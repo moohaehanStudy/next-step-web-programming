@@ -31,10 +31,17 @@ public class DispatcherServlet extends HttpServlet {
 
     @Override
     public void service(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException {
-        init();
         log.debug("요청URI는: {}", req.getRequestURI());
 
         Controller controller = findController(req.getRequestURI());
+        log.debug("Found controller: {}", controller);
+
+        if(controller == null){
+            log.warn("No controller found for URI: {}", req.getRequestURI());
+            res.sendError(HttpServletResponse.SC_NOT_FOUND);
+            return;
+        }
+
         try {
             String value = controller.execute(req, res);
             if(value != null){

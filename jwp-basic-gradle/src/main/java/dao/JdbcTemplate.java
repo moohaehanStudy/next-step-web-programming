@@ -2,6 +2,7 @@ package dao;
 
 import exception.CustomException;
 import jdbc.ConnectionManager;
+import jdbc.KeyHolder;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -65,6 +66,23 @@ public class JdbcTemplate{
         }
 
         return lists.get(0);
+    }
+
+    public void update(String sql, PreparedStatementSetter pss, KeyHolder keyHolder) {
+        try(Connection con = ConnectionManager.getConnection();
+            PreparedStatement ps = con.prepareStatement(sql)){
+            pss.setValues(ps);
+            ps.executeUpdate();
+
+            //JDBC 기능으로, DB가 AUTO_INCREMENT로 생성한 키를 ResultSet 형태로 반환
+            try (ResultSet rs = ps.getGeneratedKeys()) {
+                if (rs.next()) {
+                    keyHolder.setId(rs.getLong(1));
+                }
+            }
+        } catch(SQLException e){
+            throw new CustomException("DB 업데이트 중 문제가 발생했습니다.");
+        }
     }
 
 //    public <T> T queryForObject(String sql, RowMapper<T> rm, Object... values) throws SQLException {

@@ -29,6 +29,6 @@ public class CreateUserController implements Controller {
         userDao.insert(user);
 
 
-        return "redirect:/index.jsp";
+        return "redirect:/home.jsp";
     }
 }

@@ -15,7 +15,7 @@ public class LogoutUserController implements Controller {
             HttpSession session = req.getSession();
             session.removeAttribute("user");
 
-            return "redirect:/index.jsp";
+            return "redirect:/home.jsp";
         } else{
             return "redirect:/user/login.jsp";
         }
