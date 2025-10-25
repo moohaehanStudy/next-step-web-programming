@@ -13,7 +13,6 @@ import java.io.PrintWriter;
 public class AddAnswerController implements Controller {
     private static final Logger log = LoggerFactory.getLogger(AddAnswerController.class);
 
-    //응답 데이터 JSON으로..?!
     @Override
     public String execute(HttpServletRequest req, HttpServletResponse resp) throws Exception {
         Answer answer = new Answer(
