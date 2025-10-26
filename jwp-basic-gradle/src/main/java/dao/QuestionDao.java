@@ -23,7 +23,6 @@ public class QuestionDao {
     public List<Question> findAll() throws SQLException {
         JdbcTemplate jdbcTemplate = new JdbcTemplate();
 
-        PreparedStatementSetter pss = ps -> {};
         RowMapper<Question> rm = rs -> new Question(
                 rs.getLong("questionId"),
                 rs.getString("writer"),
@@ -33,14 +32,11 @@ public class QuestionDao {
                 rs.getInt("countOfAnswer")
         );
 
-        return jdbcTemplate.query(SELECTALLQUERY, pss, rm);
+        return jdbcTemplate.query(SELECTALLQUERY, rm);
     }
 
     public Question findById(Long questionId) throws SQLException {
         JdbcTemplate jdbcTemplate = new JdbcTemplate();
-        PreparedStatementSetter pss = ps -> {
-            ps.setLong(1, questionId);
-        };
 
         RowMapper<Question> rm = rs -> new Question(
                 rs.getLong(QUESTIONID),
@@ -51,6 +47,6 @@ public class QuestionDao {
                 rs.getInt(COUNTOFANSWER)
         );
 
-        return jdbcTemplate.queryForObject(SELECTQUERY, pss, rm);
+        return jdbcTemplate.queryForObject(SELECTQUERY, rm, questionId);
     }
 }

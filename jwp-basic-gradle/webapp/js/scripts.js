@@ -22,8 +22,13 @@ function onSuccess(json, status){
   var answerTemplate = $("#answerTemplate").html();
 
   //위에서 불러온 HTML 문자열(answerTemplate)안에 {0}, {1}, {2}, {3} 같은 포맷용 자리 표시자가 있다면 .format() 함수를 이용해 실제 값으로 치환한다
-  var template = answerTemplate.format(json.writer, new Date(json.createdDate), json.contents, json.answerId);
-
+  var template = answerTemplate.format(
+      json.writer,
+      new Date(json.createdDate).toLocaleString(), // 보기 좋게
+      json.contents,
+      json.answerId,
+      json.answerId
+  );
   // class="qna-comment-slipp-articles"인 요소를 찾아서, 가장 앞쪽에(prepend) 새로 만든 HTML(template)을 삽입한다
   //즉, 새로운 답변이 화면 상단에 추가되는 효과를 준다
   $(".qna-comment-slipp-articles").prepend(template);
