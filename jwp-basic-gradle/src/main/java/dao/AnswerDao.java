@@ -12,6 +12,7 @@ public class AnswerDao {
     private static final String INSERTQUERY = "INSERT INTO ANSWERS (writer, contents, createdDate, questionId) VALUES (?, ?, ?, ?)";
     private static final String SELECTQUERYBYANSWERID = "SELECT answerId, writer, contents, createdDate, questionId FROM ANSWERS WHERE answerId = ?";
     private static final String SELECTALLQUERYBYQUESTIONID = "SELECT answerId, writer, contents, createdDate FROM ANSWERS WHERE questionId = ?";
+    private static final String DELETEQUERY = "DELETE FROM ANSWERS WHERE answerId = ?";
 
     public Answer insert(Answer answer) throws SQLException {
         JdbcTemplate jdbcTemplate = new JdbcTemplate();
@@ -63,5 +64,11 @@ public class AnswerDao {
                 );
 
         return jdbcTemplate.query(SELECTALLQUERYBYQUESTIONID, pss, rm);
+    }
+
+    public void delete(Long answerId) throws SQLException {
+        JdbcTemplate jdbcTemplate = new JdbcTemplate();
+
+        jdbcTemplate.update(DELETEQUERY, answerId);
     }
 }

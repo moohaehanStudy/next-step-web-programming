@@ -1,6 +1,7 @@
-package controller;
+package controller.qna;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import controller.Controller;
 import dao.AnswerDao;
 import model.Answer;
 import org.slf4j.Logger;

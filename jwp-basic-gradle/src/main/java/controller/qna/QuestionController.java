@@ -1,5 +1,6 @@
-package controller;
+package controller.qna;
 
+import controller.Controller;
 import dao.AnswerDao;
 import dao.QuestionDao;
 
