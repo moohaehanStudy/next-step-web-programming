@@ -16,8 +16,6 @@ public class HomeController implements Controller {
     @Override
     public View execute(HttpServletRequest req, HttpServletResponse resp) throws Exception {
         QuestionDao questionDao = new QuestionDao();
-        List questions = questionDao.findAll();
-
         req.setAttribute("questions", questionDao.findAll());
 
         return new JspView("/home.jsp");
