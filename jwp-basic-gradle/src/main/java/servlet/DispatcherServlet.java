@@ -4,6 +4,7 @@ import controller.Controller;
 import controller.RequestMapping;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import view.ModelAndView;
 import view.View;
 
 import javax.servlet.RequestDispatcher;
@@ -43,8 +44,9 @@ public class DispatcherServlet extends HttpServlet {
         }
 
         try {
-            View view = controller.execute(req, res);
-            view.render(req, res);
+            ModelAndView mav = controller.execute(req, res);
+            View view = mav.getView();
+            view.render(mav.getModel(), req, res);
 
         } catch(Throwable e){
             log.error(e.getMessage(), e);

@@ -7,6 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import util.SessionUserUtils;
 import view.JspView;
+import view.ModelAndView;
 import view.View;
 
 import javax.servlet.http.HttpServletRequest;
@@ -17,13 +18,13 @@ public class UpdateUserController implements Controller {
     private static final Logger log = LoggerFactory.getLogger(UpdateUserController.class);
 
     @Override
-    public View execute(HttpServletRequest req, HttpServletResponse resp) throws Exception {
+    public ModelAndView execute(HttpServletRequest req, HttpServletResponse resp) throws Exception {
         User value = SessionUserUtils.getUserFromSession(req.getSession());
 
         if(value == null){
             log.error("로그인 한 회원만 목록을 볼 수 있습니다 -> updateUserServlet");
 
-            return new JspView("/home.jsp");
+            return new ModelAndView(new JspView("/"));
         } else{
             UserDao userDao = new UserDao();
             User user = null;
@@ -31,7 +32,7 @@ public class UpdateUserController implements Controller {
                 user = userDao.findByUserId(req.getParameter("userId"));
             } catch (SQLException e) {
                 log.error("사용자 조회 중 오류 발생: {}", e.getMessage());
-                return new JspView("redirect:/user/list");
+                return new ModelAndView(new JspView("redirect:/user/list"));
             }
 
             if(SessionUserUtils.isSameUser(req.getSession(), user)){
@@ -44,11 +45,11 @@ public class UpdateUserController implements Controller {
 
                 userDao.update(updatedUser);
 
-                return new JspView("redirect:/user/list");
+                return new ModelAndView(new JspView("redirect:/user/list"));
             } else{
                 log.error("자기 자신의 정보만 수정할 수 있습니다");
 
-                return new JspView("redirect:/user/list");
+                return new ModelAndView(new JspView("redirect:/user/list"));
             }
         }
     }

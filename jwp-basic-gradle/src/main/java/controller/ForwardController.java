@@ -5,6 +5,7 @@ import model.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import view.JspView;
+import view.ModelAndView;
 import view.View;
 
 import javax.servlet.ServletException;
@@ -23,7 +24,7 @@ public class ForwardController implements Controller {
     }
 
     @Override
-    public View execute(HttpServletRequest req, HttpServletResponse resp) throws Exception {
+    public ModelAndView execute(HttpServletRequest req, HttpServletResponse resp) throws Exception {
 
         if(forwardUrl.equals("/user/updateForm.jsp")) {
             Object user = req.getSession().getAttribute("user");
@@ -36,6 +37,6 @@ public class ForwardController implements Controller {
                 req.setAttribute("user", currentUser);
             }
         }
-        return new JspView(forwardUrl);
+        return new ModelAndView(new JspView(forwardUrl));
     }
 }
