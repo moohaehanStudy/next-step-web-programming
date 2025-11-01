@@ -4,6 +4,8 @@ import dao.UserDao;
 import model.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import view.JspView;
+import view.View;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -21,7 +23,7 @@ public class ForwardController implements Controller {
     }
 
     @Override
-    public String execute(HttpServletRequest req, HttpServletResponse resp) throws Exception {
+    public View execute(HttpServletRequest req, HttpServletResponse resp) throws Exception {
 
         if(forwardUrl.equals("/user/updateForm.jsp")) {
             Object user = req.getSession().getAttribute("user");
@@ -34,6 +36,6 @@ public class ForwardController implements Controller {
                 req.setAttribute("user", currentUser);
             }
         }
-        return forwardUrl;
+        return new JspView(forwardUrl);
     }
 }

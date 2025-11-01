@@ -5,6 +5,8 @@ import controller.Controller;
 import dao.AnswerDao;
 import model.Answer;
 import model.Result;
+import view.JsonView;
+import view.View;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -13,7 +15,7 @@ import java.io.PrintWriter;
 public class DeleteAnswerController implements Controller {
 
     @Override
-    public String execute(HttpServletRequest req, HttpServletResponse resp) throws Exception {
+    public View execute(HttpServletRequest req, HttpServletResponse resp) throws Exception {
         Long answerId = Long.parseLong(req.getParameter("answerId"));
 
         AnswerDao answerDao = new AnswerDao();
@@ -25,6 +27,6 @@ public class DeleteAnswerController implements Controller {
         PrintWriter out = resp.getWriter();
         out.println(objectMapper.writeValueAsString(Result.ok()));
 
-        return null;
+        return new JsonView();
     }
 }

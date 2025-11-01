@@ -5,6 +5,8 @@ import dao.UserDao;
 import model.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import view.JspView;
+import view.View;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -14,7 +16,7 @@ public class LoginUserController implements Controller {
     private static final Logger log = LoggerFactory.getLogger(LoginUserController.class);
 
     @Override
-    public String execute(HttpServletRequest req, HttpServletResponse resp) throws Exception {
+    public View execute(HttpServletRequest req, HttpServletResponse resp) throws Exception {
         String userId = req.getParameter("userId");
         String password = req.getParameter("password");
         
@@ -22,15 +24,15 @@ public class LoginUserController implements Controller {
         User user = userDao.findByUserId(userId);
 
         if(user == null){
-            return "redirect:/user/login_failed.jsp";
+            return new JspView("redirect:/user/login_failed.jsp");
         } else {
             if(user.comparePassword(password)){
                 HttpSession session = req.getSession();
                 session.setAttribute("user", user);
 
-                return "redirect:/home.jsp";
+                return new JspView("redirect:/home.jsp");
             } else {
-                return "redirect:/user/login_failed.jsp";
+                return new JspView("redirect:/user/login_failed.jsp");
             }
         }
     }

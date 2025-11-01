@@ -4,6 +4,7 @@ import controller.Controller;
 import controller.RequestMapping;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import view.View;
 
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
@@ -16,7 +17,6 @@ import java.io.IOException;
 @WebServlet(name = "dispatcher", urlPatterns = "/", loadOnStartup = 1)
 public class DispatcherServlet extends HttpServlet {
     private static final Logger log = LoggerFactory.getLogger(DispatcherServlet.class);
-    public static final String REDIRECT = "redirect:";
 
     private RequestMapping requestMapping;
     @Override
@@ -43,16 +43,9 @@ public class DispatcherServlet extends HttpServlet {
         }
 
         try {
-            String value = controller.execute(req, res);
-            if(value != null){
-                if (value.startsWith(REDIRECT)) {
-                    String path = value.substring(REDIRECT.length());
-                    res.sendRedirect(path);
-                } else {
-                    RequestDispatcher dispatcher = req.getRequestDispatcher(value);
-                    dispatcher.forward(req, res);
-                }
-            }
+            View view = controller.execute(req, res);
+            view.render(req, res);
+
         } catch(Throwable e){
             log.error(e.getMessage(), e);
             throw new ServletException(e.getMessage());
