@@ -1,29 +1,32 @@
-package controller;
+package controller.user;
 
-import db.DataBase;
+import controller.Controller;
+import dao.UserDao;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import util.SessionUserUtils;
+import view.JspView;
+import view.ModelAndView;
+import view.View;
 
-import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
 
 public class ListUserController implements Controller {
     private static final Logger log = LoggerFactory.getLogger(ListUserController.class);
 
     @Override
-    public String execute(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+    public ModelAndView execute(HttpServletRequest req, HttpServletResponse resp) throws Exception {
 
         if(SessionUserUtils.isLoggedIn(req.getSession())) {
-            req.setAttribute("users", DataBase.findAll());
+            UserDao userDao = new UserDao();
+            req.setAttribute("users", userDao.findAll());
 
-            return "/user/list.jsp";
+            return new ModelAndView(new JspView("/user/list.jsp"));
         } else {
             log.error("로그인 한 회원만 목록을 볼 수 있습니다.");
 
-            return "/user/login.jsp";
+            return new ModelAndView(new JspView("/user/login.jsp"));
         }
     }
 }

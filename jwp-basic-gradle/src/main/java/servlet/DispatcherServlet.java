@@ -4,6 +4,8 @@ import controller.Controller;
 import controller.RequestMapping;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import view.ModelAndView;
+import view.View;
 
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
@@ -16,7 +18,6 @@ import java.io.IOException;
 @WebServlet(name = "dispatcher", urlPatterns = "/", loadOnStartup = 1)
 public class DispatcherServlet extends HttpServlet {
     private static final Logger log = LoggerFactory.getLogger(DispatcherServlet.class);
-    public static final String REDIRECT = "redirect:";
 
     private RequestMapping requestMapping;
     @Override
@@ -31,18 +32,25 @@ public class DispatcherServlet extends HttpServlet {
 
     @Override
     public void service(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException {
-        init();
         log.debug("요청URI는: {}", req.getRequestURI());
 
         Controller controller = findController(req.getRequestURI());
-        String value = controller.execute(req, res);
+        log.debug("Found controller: {}", controller);
 
-        if(value.startsWith(REDIRECT)){
-            String path = value.substring(REDIRECT.length());
-            res.sendRedirect(path);
-        } else{
-            RequestDispatcher dispatcher = req.getRequestDispatcher(value);
-            dispatcher.forward(req, res);
+        if(controller == null){
+            log.warn("No controller found for URI: {}", req.getRequestURI());
+            res.sendError(HttpServletResponse.SC_NOT_FOUND);
+            return;
+        }
+
+        try {
+            ModelAndView mav = controller.execute(req, res);
+            View view = mav.getView();
+            view.render(mav.getModel(), req, res);
+
+        } catch(Throwable e){
+            log.error(e.getMessage(), e);
+            throw new ServletException(e.getMessage());
         }
     }
 }

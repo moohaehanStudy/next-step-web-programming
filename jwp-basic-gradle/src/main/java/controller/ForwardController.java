@@ -1,14 +1,22 @@
 package controller;
 
-import db.DataBase;
+import dao.UserDao;
 import model.User;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import view.JspView;
+import view.ModelAndView;
+import view.View;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.sql.SQLException;
 
 public class ForwardController implements Controller {
+    private final Logger log = LoggerFactory.getLogger(ForwardController.class);
+
     private String forwardUrl;
 
     public ForwardController(String forwardUrl) {
@@ -16,17 +24,19 @@ public class ForwardController implements Controller {
     }
 
     @Override
-    public String execute(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+    public ModelAndView execute(HttpServletRequest req, HttpServletResponse resp) throws Exception {
 
         if(forwardUrl.equals("/user/updateForm.jsp")) {
             Object user = req.getSession().getAttribute("user");
 
             if(user != null) {
                 String userId = req.getParameter("userId");
-                User currentUser = DataBase.findUserById(userId);
+                UserDao userDao = new UserDao();
+                User currentUser = userDao.findByUserId(userId);
+
                 req.setAttribute("user", currentUser);
             }
         }
-        return forwardUrl;
+        return new ModelAndView(new JspView(forwardUrl));
     }
 }

@@ -1,23 +1,22 @@
-package controller;
+package controller.user;
 
+import controller.Controller;
 import dao.UserDao;
-import db.DataBase;
 import model.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import support.ContextLoaderListener;
+import view.JspView;
+import view.ModelAndView;
+import view.View;
 
-import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.sql.SQLException;
 
 public class CreateUserController implements Controller {
     private static final Logger log = LoggerFactory.getLogger(CreateUserController.class);
 
     @Override
-    public String execute(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+    public ModelAndView execute(HttpServletRequest req, HttpServletResponse resp) throws Exception {
         User user = new User(
                 req.getParameter("userId"),
                 req.getParameter("password"),
@@ -26,12 +25,8 @@ public class CreateUserController implements Controller {
         );
 
         UserDao userDao = new UserDao();
-        try{
-            userDao.insert(user);
-        } catch(SQLException e){
-            log.error(e.getMessage());
-        }
+        userDao.insert(user);
 
-        return "redirect:/index.jsp";
+        return new ModelAndView(new JspView("redirect:/"));
     }
 }

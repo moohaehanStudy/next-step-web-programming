@@ -1,5 +1,10 @@
 package controller;
 
+import controller.qna.AddAnswerController;
+import controller.qna.DeleteAnswerController;
+import controller.qna.QuestionController;
+import controller.user.*;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -16,6 +21,9 @@ public class RequestMapping {
         controllers.put("/user/logout", new LogoutUserController());
         controllers.put("/user/update", new UpdateUserController());
         controllers.put("/user/updateForm", new ForwardController("/user/updateForm.jsp"));
+        controllers.put("/api/qna/addAnswer", new AddAnswerController());
+        controllers.put("/qna/show", new QuestionController());
+        controllers.put("/api/qna/deleteAnswer", new DeleteAnswerController());
     }
 
     public Controller getController(String url){

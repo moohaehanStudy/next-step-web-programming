@@ -1,5 +1,8 @@
 package filter;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import javax.servlet.*;
 import javax.servlet.annotation.WebFilter;
 import javax.servlet.http.HttpServletRequest;
@@ -9,6 +12,7 @@ import java.util.List;
 
 @WebFilter("/*")
 public class ResourceFilter implements Filter {
+    private static final Logger log = LoggerFactory.getLogger(ResourceFilter.class);
     private static final List<String> endUrls = new ArrayList<>();
 
     static{
@@ -17,6 +21,7 @@ public class ResourceFilter implements Filter {
         endUrls.add("/images");
         endUrls.add("/fonts");
         endUrls.add("/favicon.ico");
+        endUrls.add("/.well-known");
     }
 
     private RequestDispatcher requestDispatcher;
@@ -34,9 +39,10 @@ public class ResourceFilter implements Filter {
 
         if (isResourceUrl(path)) {
             requestDispatcher.forward(servletRequest, servletResponse);
-        }else{
-            filterChain.doFilter(servletRequest, servletResponse);
+            return;
         }
+
+        filterChain.doFilter(servletRequest, servletResponse);
     }
 
     private boolean isResourceUrl(String path){

@@ -1,4 +1,4 @@
-<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+P<%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
 <nav class="navbar navbar-fixed-top header">
     <div class="col-md-12">
@@ -46,7 +46,7 @@
         </div>
         <div class="collapse navbar-collapse" id="navbar-collapse2">
             <ul class="nav navbar-nav navbar-right">
-                <li class="active"><a href="index.html">Posts</a></li>
+                <li class="active"><a href="/">Posts</a></li>
                 <c:choose>
                     <c:when test="${not empty sessionScope.user}">
                         <li><a href="/user/logout" role="button">로그아웃</a></li>

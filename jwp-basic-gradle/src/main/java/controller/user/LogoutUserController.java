@@ -1,23 +1,25 @@
-package controller;
+package controller.user;
 
+import controller.Controller;
 import util.SessionUserUtils;
+import view.JspView;
+import view.ModelAndView;
+import view.View;
 
-import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
-import java.io.IOException;
 
 public class LogoutUserController implements Controller {
     @Override
-    public String execute(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+    public ModelAndView execute(HttpServletRequest req, HttpServletResponse resp) throws Exception {
         if(SessionUserUtils.isLoggedIn(req.getSession())){
             HttpSession session = req.getSession();
             session.removeAttribute("user");
 
-            return "redirect:/index.jsp";
+            return new ModelAndView(new JspView("redirect:/"));
         } else{
-            return "redirect:/user/login.jsp";
+            return new ModelAndView(new JspView("redirect:/user/login.jsp"));
         }
     }
 }

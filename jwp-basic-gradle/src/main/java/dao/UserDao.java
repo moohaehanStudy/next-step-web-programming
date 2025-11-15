@@ -46,13 +46,9 @@ public class UserDao {
     public User findByUserId(String userId) throws SQLException {
         JdbcTemplate jdbcTemplate = new JdbcTemplate();
 
-        PreparedStatementSetter pss = ps -> {
-            ps.setString(1, userId);
-        };
-
         RowMapper<User> rm = createRowMapper();
 
-        return jdbcTemplate.queryForObject(SELECTONEQUERY, pss, rm);
+        return jdbcTemplate.queryForObject(SELECTONEQUERY, rm, userId);
     }
 
     private RowMapper<User> createRowMapper() {
@@ -69,10 +65,8 @@ public class UserDao {
     public List<User> findAll() throws SQLException {
         JdbcTemplate jdbcTemplate = new JdbcTemplate();
 
-        PreparedStatementSetter pss = ps -> {};
-
         RowMapper<User> rm = createRowMapper();
 
-        return jdbcTemplate.query(SELECTALLQUERY, pss, rm);
+        return jdbcTemplate.query(SELECTALLQUERY, rm);
     }
 }
